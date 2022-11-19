@@ -5,6 +5,7 @@ import time
 from bs4 import BeautifulSoup
 import requests
 
+# Products
 class Item():
     def __init__(self, title, price, rating, reviews, availability, URL):
         self.title = title
@@ -17,6 +18,7 @@ class Item():
     def toString(self):
         return BLUE + f"Product's title: {self.title}\n" + f"Product's price: {self.price}\n" + f"Product's rating: {self.rating}\n" + f"Total number of product reviews: {self.reviews}\n" + f"Product's availability: {self.availability}\n" + f"Product's URL: {self.URL}\n" + NORM 
 
+# Get the title of the product
 def getTitle(soup):
     try:
         productTitle = soup.find("span", attrs={"id": 'productTitle'}).text.strip()
@@ -27,6 +29,7 @@ def getTitle(soup):
 
     return productTitle
 
+# Get the price of the product and any discounts
 def getPrice(soup):
     discount = soup.find("span", attrs={"class": "reinventPriceSavingsPercentageMargin savingsPercentage"})
     priceSpan = soup.select_one("span.a-price.reinventPricePriceToPayMargin.priceToPay, span.a-price.apexPriceToPay") 
@@ -52,6 +55,7 @@ def getPrice(soup):
 
     return productPrice
 
+# Get the product's rating out of 5.0
 def getProductRating(soup):
     try:
         productRating = soup.find("span", attrs={"class": "reviewCountTextLinkedHistogram"})["title"].strip()
@@ -62,6 +66,7 @@ def getProductRating(soup):
 
     return productRating
 
+# Get the total number of product reviews
 def getProductReviews(soup):
     try:
         numberOfReviews = soup.find("span", attrs={'id': 'acrCustomerReviewText'}).string.strip().replace(',', '')
@@ -72,6 +77,7 @@ def getProductReviews(soup):
 
     return numberOfReviews
 
+# Gets product's availability (e.g in stock, how many left, out of stock)
 def getProductAvailability(soup):
     try:
         productAvailabilityDiv = soup.find("div", attrs={'id': 'availability'})
@@ -92,11 +98,12 @@ def main(URL):
     # Creating the Soup Object containing all data
     soup = BeautifulSoup(webpage.content, "lxml")
     print(GREEN + "Collecting website data..." + NORM)
-    # Get product price
-    productPrice = float(getPrice(soup).replace('$', ''))
 
     # Getting product title
     productTitle = getTitle(soup)
+
+    # Get product price
+    productPrice = float(getPrice(soup).replace('$', ''))
 
     # Get product rating
     productRating = getProductRating(soup)
@@ -144,17 +151,13 @@ if __name__ == '__main__':
 
     File = open("./out.csv", "a", encoding="utf-8")
 
-    parser = argparse.ArgumentParser(description=GREEN + "Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items.\nFor more information on how to use it run the program using -h or --help." + RED + "\nCreator: " + tag + NORM)
-    parser.add_argument("-i", "--item", help="enter the item you want to search for", type=str)
+    parser = argparse.ArgumentParser(description=GREEN + "Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items.\nFor more information on how to use it run the program using -h or --help. (* = required field)" + RED + "\nCreator " + tag + NORM)
+    parser.add_argument("-i", "--item", help="enter the item you want to search for (*)", type=str)
     parser.add_argument("-l", "--lower", help="enter the lower bound product price", type=int)
     parser.add_argument("-u", "--upper", help="enter the upper bound product price", type=int)
-    parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended n <= 50)", type=int)
+    parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended n <= 50) (*)", type=int)
     parser.print_help()
     args = parser.parse_args()
-    args.item = "yoga mats"
-    args.num = 3
-    args.lower = 30
-    args.upper = 100
 
     # If the user doesn't give an item, close the program.
     if args.item == None:
@@ -200,9 +203,9 @@ if __name__ == '__main__':
         main("http://amazon.com" + link)
 
     print(RED + "Your soup is ready!\n" + NORM)
-    count = 1
-
     print(RED + "Your selected settings for this soup were:\nItem: " + args.item + "\nLower bounds: " + str(args.lower) + "\nUpper bounds: " + str(args.upper) + "\nNumber of links: " + str(args.num) + NORM)
+
+    count = 1
     # Print the items to the console
     for item in allItems:
         print(GREEN + f"Item #{count}:\n" + NORM)
