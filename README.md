@@ -1,6 +1,6 @@
 # Amazon-Scraper: Find your perfect item!
           
-Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items. Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, and more to come!
+Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items. Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more to come!
 
 ## Dependencies:
 
@@ -60,7 +60,17 @@ Get all items no matter the price:
 python3 scrape.py -i car tires -n 100
 ```
 
-## Demo 
+## CSV: 
+
+Formatting:
+
+```
+title,price,rating,reviews,availability,url
+```
+
+The CSV contains ** ALL ** of the web page links scraped (even the ones that were not included in the output)
+
+## Demo:
 
 Coming soon...
 
