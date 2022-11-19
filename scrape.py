@@ -5,14 +5,27 @@ import time
 from bs4 import BeautifulSoup
 import requests
 
+class Item():
+    def __init__(self, title, price, rating, reviews, availability, URL):
+        self.title = title
+        self.price = price
+        self.rating = rating
+        self.reviews = reviews
+        self.availability = availability
+        self.URL = URL
+
+    def toString(self):
+        return BLUE + f"Product's title: {self.title}\n" + f"Product's price: {self.price}\n" + f"Product's rating: {self.rating}\n" + f"Total number of product reviews: {self.reviews}\n" + f"Product's availability: {self.availability}\n" + f"Product's URL: {self.URL}\n" + NORM 
+
 def getTitle(soup):
     try:
         productTitle = soup.find("span", attrs={"id": 'productTitle'}).text.strip()
     except:
         productTitle = "No title."
 
-    print(BLUE + f"Product's title: {productTitle}" +  NORM)
     File.write(f"{productTitle},")
+
+    return productTitle
 
 def getPrice(soup):
     discount = soup.find("span", attrs={"class": "reinventPriceSavingsPercentageMargin savingsPercentage"})
@@ -34,23 +47,10 @@ def getPrice(soup):
     else:
         productPrice = "NA"
 
-    priceValue = float(productPrice.replace('$', ''))
-
-    if args.lower and args.upper == None and priceValue >= args.lower:
-        print(BLUE + f"Product's price: {productPrice}" + NORM)
-        print(BLUE + f"Product's discount: {discount}" + NORM)
-    elif args.upper and args.lower == None and priceValue <= args.upper:
-        print(BLUE + f"Product's price: {productPrice}" + NORM)
-        print(BLUE + f"Product's discount: {discount}" + NORM)
-    elif args.upper and args.lower and args.lower <= priceValue <= args.upper:
-        print(BLUE + f"Product's price: {productPrice}" + NORM)
-        print(BLUE + f"Product's discount: {discount}" + NORM)
-    elif args.upper == None and args.lower == None:
-        print(BLUE + f"Product's price: {productPrice}" + NORM)
-        print(BLUE + f"Product's discount: {discount}" + NORM)
-
     File.write(f"{productPrice},")
     File.write(f"{discount},")
+
+    return productPrice
 
 def getProductRating(soup):
     try:
@@ -58,27 +58,30 @@ def getProductRating(soup):
     except:
         productRating = "No rating."
 
-    print(BLUE + f"Product's rating: {productRating}" + NORM)
     File.write(f"{productRating},")
+
+    return productRating
 
 def getProductReviews(soup):
     try:
         numberOfReviews = soup.find("span", attrs={'id': 'acrCustomerReviewText'}).string.strip().replace(',', '')
     except:
         numberOfReviews = "No reviews."
-    
-    print(BLUE + f"Total number of product reviews: {numberOfReviews}" + NORM)
+
     File.write(f"{numberOfReviews},")
+
+    return numberOfReviews
 
 def getProductAvailability(soup):
     try:
-        available = soup.find("div", attrs={'id': 'availability'})
-        available = available.find("span").string.strip().replace(',', '')
+        productAvailabilityDiv = soup.find("div", attrs={'id': 'availability'})
+        productAvailability = productAvailabilityDiv.find("span").string.strip().replace(',', '')
     except:
-        available = "No availability."
+        productAvailability = "No availability."
     
-    print(BLUE + f"Product's availability: {available}" + NORM)
-    File.write(f"{available},")
+    File.write(f"{productAvailability},")
+
+    return productAvailability
 
 def main(URL):
     HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36', 'Accept-Language': 'en-US, en;q=0.5', "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"})
@@ -88,23 +91,35 @@ def main(URL):
 
     # Creating the Soup Object containing all data
     soup = BeautifulSoup(webpage.content, "lxml")
+    print("Collecting website data...")
+    # Get product price
+    productPrice = float(getPrice(soup).replace('$', ''))
 
     # Getting product title
-    getTitle(soup)
-
-    # Get product price
-    getPrice(soup)
+    productTitle = getTitle(soup)
 
     # Get product rating
-    getProductRating(soup)
+    productRating = getProductRating(soup)
 
     # Get number of product reviews
-    getProductReviews(soup)
+    numberOfReviews = getProductReviews(soup)
 
     # Get product availability
-    getProductAvailability(soup)
-    
-    print(BLUE + f"Product's URL: {URL}\n" + NORM)
+    productAvailability = getProductAvailability(soup)
+
+    if args.lower and args.upper and args.lower <= productPrice <= args.upper:
+        item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+        allItems.append(item)
+    elif args.lower == None and args.upper and productPrice <= args.upper:
+        item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+        allItems.append(item)
+    elif args.upper == None and args.lower and args.lower <= productPrice:
+        item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+        allItems.append(item)
+    elif args.upper == None and args.lower == None:
+        item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+        allItems.append(item)
+
     File.write(f"{URL},\n")
 
 if __name__ == '__main__':
@@ -114,6 +129,8 @@ if __name__ == '__main__':
     GREEN = '\033[92m'
     NORM = '\x1b[0m'
     tag = "@Moffi-bit"
+
+    allItems = []
 
     # Print the banner to the console
     print(GREEN + """
@@ -131,8 +148,13 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--item", help="enter the item you want to search for", type=str)
     parser.add_argument("-l", "--lower", help="enter the lower bound product price", type=int)
     parser.add_argument("-u", "--upper", help="enter the upper bound product price", type=int)
+    parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended n <= 50)", type=int)
     parser.print_help()
     args = parser.parse_args()
+    args.item = "yoga mats"
+    args.num = 5
+    args.lower = 40
+    args.upper = 70
 
     # If the user doesn't give an item, close the program.
     if args.item == None:
@@ -140,7 +162,12 @@ if __name__ == '__main__':
         time.sleep(1)
         sys.exit()
 
-    # item = input("Enter an item")
+    # If the user doesn't give the number of links to scrape, close the program.
+    if args.num == None:
+        print("Number of links argument not specified. Program terminating...")
+        time.sleep(1)
+        sys.exit()
+
     # Request information. Using headers to trick Amazon webpage
     HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36 Gecko/20100101 Firefox/50.0','Accept-Language': 'en-US'})
     URL = f"https://www.amazon.com/s?k={args.item}"
@@ -160,14 +187,24 @@ if __name__ == '__main__':
     linksList = []
 
     # Loop for extracting the link content from the href tag
+    i = 0
     for link in links:
-        linksList.append(link.get('href'))
+        if i < args.num:
+            linksList.append(link.get('href'))
+            i += 1
+        else:
+            break
     
     # Finally get the data from each URL from the search
-    count = 1
     for link in linksList:
-        print(GREEN + f"Item #{count}:" + NORM)
         main("http://amazon.com" + link)
+
+    print(RED + "Your soup is ready!\n" + NORM)
+    count = 1
+    # Print the items to the console
+    for item in allItems:
+        print(GREEN + f"Item #{count}:\n" + NORM)
+        print(item.toString())
         count += 1
 
     File.close()
