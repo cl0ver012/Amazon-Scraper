@@ -68,7 +68,7 @@ Formatting:
 title,price,rating,reviews,availability,url
 ```
 
-The CSV contains ** ALL ** of the web page links scraped (even the ones that were not included in the output)
+The CSV contains **ALL** of the web page links scraped (even the ones that were not included in the output)
 
 ## Demo:
 
