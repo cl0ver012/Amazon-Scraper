@@ -76,6 +76,8 @@ Coming soon...
 
 ## Future Improvements
 
+* [x] Pulling product information
+* [x] Output CSV
 * [x] Multiple page scraping
 * [ ] Consistency of finding product information
  
