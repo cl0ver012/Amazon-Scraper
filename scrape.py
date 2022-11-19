@@ -115,18 +115,19 @@ def main(URL):
     # Get product availability
     productAvailability = getProductAvailability(soup)
 
-    if args.lower and args.upper and args.lower <= productPrice <= args.upper:
-        item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-        allItems.append(item)
-    elif args.lower == None and args.upper and productPrice <= args.upper:
-        item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-        allItems.append(item)
-    elif args.upper == None and args.lower and args.lower <= productPrice:
-        item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-        allItems.append(item)
-    elif args.upper == None and args.lower == None:
-        item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-        allItems.append(item)
+    if productPrice != "NA":
+        if args.lower and args.upper and args.lower <= productPrice <= args.upper:
+            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+            allItems.append(item)
+        elif args.lower == None and args.upper and productPrice <= args.upper:
+            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+            allItems.append(item)
+        elif args.upper == None and args.lower and args.lower <= productPrice:
+            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+            allItems.append(item)
+        elif args.upper == None and args.lower == None:
+            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+            allItems.append(item)
 
     File.write(f"{URL},\n")
 
