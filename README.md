@@ -1,13 +1,5 @@
 # Amazon-Scraper: Find your perfect item!
-
-<br>
-    _                            ___<br>                 
-   /_\  _ __  __ _ ______ _ _   / __| __ _ _ __ _ _ __  ___ _ _<br>
-  / _ \| '  \/ _` |_ / _ \ ' \  \__ \/ _| '_/ _` | '_ \/ -_) '_|<br>
- /_/ \_\_|_|_\__,_/__\___/_||_| |___/\__|_| \__,_| .__/\___|_|<br>
-                                                 |_|<br>
-<br>
-                                                 
+          
 Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items. Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, and more to come!
 
 ## Dependencies:
@@ -67,6 +59,10 @@ Get all items no matter the price:
 ```
 python3 scrape.py -i car tires -n 100
 ```
+
+## Demo 
+
+Coming soon...
 
 ## Future Improvements
 
