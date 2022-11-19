@@ -33,7 +33,8 @@ cd Amazon-Scraper
 Usage: 
 
 ```
-usage: scrape.py [-h] [-i ITEM] [-l LOWER] [-u UPPER] [-n NUM]
+usage: scrape.py [-h] [-i ITEM] [-l LOWER] [-u UPPER] [-n NUM] [-c]
+Note: Adding -c to the arguments will cause the program to print the cheapest item at the end of scraping
 ```
 
 Get all items within a price range (USD):
@@ -60,6 +61,12 @@ Get all items no matter the price:
 python3 scrape.py -i car tires -n 100
 ```
 
+Get the cheapest item of the items scraped:
+
+```
+python scrape.py -i rtx 3090 -n 50 -c
+```
+
 ## CSV: 
 
 Formatting:
@@ -68,7 +75,7 @@ Formatting:
 title,price,rating,reviews,availability,url
 ```
 
-The CSV contains **ALL** of the web page links scraped (even the ones that were not included in the output)
+The CSV contains **ALL** of the relevant items scraped
 
 ## Demo:
 
@@ -79,5 +86,6 @@ Coming soon...
 * [x] Pulling product information
 * [x] Output CSV
 * [x] Multiple page scraping
+* [x] Return the cheapest item (if specified with -c)
 * [ ] Consistency of finding product information
  
