@@ -15,6 +15,17 @@ class Item():
         self.availability = availability
         self.URL = URL
 
+    def getPrice(self):
+        return float(self.price.replace('$', '').replace(',', '')) if self.price != "NA" else self.price
+
+    def writeToCSV(self):
+        File.write(f"{self.title},")
+        File.write(f"{self.price},")
+        File.write(f"{self.rating},")
+        File.write(f"{self.reviews},")
+        File.write(f"{self.availability},")
+        File.write(f"{self.URL},\n")
+
     def toString(self):
         return BLUE + f"Product's title: {self.title}\n" + f"Product's price: {self.price}\n" + f"Product's rating: {self.rating}\n" + f"Total number of product reviews: {self.reviews}\n" + f"Product's availability: {self.availability}\n" + f"Product's URL: {self.URL}\n" + NORM 
 
@@ -24,8 +35,6 @@ def getTitle(soup):
         productTitle = soup.find("span", attrs={"id": 'productTitle'}).text.strip()
     except:
         productTitle = "No title."
-
-    File.write(f"{productTitle},")
 
     return productTitle
 
@@ -50,8 +59,6 @@ def getPrice(soup):
     else:
         productPrice = "NA"
 
-    File.write(f"{productPrice},")
-
     return productPrice
 
 # Get the product's rating out of 5.0
@@ -60,8 +67,6 @@ def getProductRating(soup):
         productRating = soup.find("span", attrs={"class": "reviewCountTextLinkedHistogram"})["title"].strip()
     except:
         productRating = "No rating."
-
-    File.write(f"{productRating},")
 
     return productRating
 
@@ -72,8 +77,6 @@ def getProductReviews(soup):
     except:
         numberOfReviews = "No reviews."
 
-    File.write(f"{numberOfReviews},")
-
     return numberOfReviews
 
 # Gets product's availability (e.g in stock, how many left, out of stock)
@@ -83,8 +86,6 @@ def getProductAvailability(soup):
         productAvailability = productAvailabilityDiv.find("span").string.strip().replace(',', '')
     except:
         productAvailability = "No availability."
-    
-    File.write(f"{productAvailability},")
 
     return productAvailability
 
@@ -97,14 +98,13 @@ def main(URL):
 
     # Creating the Soup Object containing all data
     soup = BeautifulSoup(webpage.content, "lxml")
-    print(GREEN + "Collecting website data..." + NORM)
+    print(GREEN + "Collecting item data..." + NORM)
 
     # Getting product title
     productTitle = getTitle(soup)
 
     # Get product price
-    price = getPrice(soup).replace('$', '')
-    productPrice = float(price) if price != "NA" else price
+    productPrice = getPrice(soup)
 
     # Get product rating
     productRating = getProductRating(soup)
@@ -115,21 +115,21 @@ def main(URL):
     # Get product availability
     productAvailability = getProductAvailability(soup)
 
-    if productPrice != "NA":
-        if args.lower and args.upper and args.lower <= productPrice <= args.upper:
-            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-            allItems.append(item)
-        elif args.lower == None and args.upper and productPrice <= args.upper:
-            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-            allItems.append(item)
-        elif args.upper == None and args.lower and args.lower <= productPrice:
-            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-            allItems.append(item)
-        elif args.upper == None and args.lower == None:
-            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-            allItems.append(item)
+    item = Item(productTitle, productPrice, productRating, numberOfReviews, productAvailability, URL)
+    allItems.append(item)
 
-    File.write(f"{URL},\n")
+def getCheapestItem():
+    lowestPrice = allItems[0].getPrice()
+    indexOfLowest = 0
+
+    for i in range(len(allItems)):
+        if allItems[i].getPrice() != "NA" and lowestPrice != "NA":
+            if allItems[i].getPrice() < lowestPrice:
+                lowestPrice = allItems[i].getPrice()
+                indexOfLowest = i
+
+    return indexOfLowest
+
 
 if __name__ == '__main__':
     # Different possible colors
@@ -157,8 +157,9 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--item", help="enter the item you want to search for (*)", type=str)
     parser.add_argument("-l", "--lower", help="enter the lower bound product price", type=int)
     parser.add_argument("-u", "--upper", help="enter the upper bound product price", type=int)
-    parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended 25 <= n <= 100) (*)", type=int)
-    parser.print_help()
+    parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended 50+) (*)", type=int)
+    parser.add_argument("-c", dest="cheap", help="add this argument if you want the program to return the cheapest item at the end of scraping", action="store_true")
+    # parser.print_help()
     args = parser.parse_args()
 
     # If the user doesn't give an item, close the program.
@@ -195,6 +196,8 @@ if __name__ == '__main__':
 
         # List where are the links are going to be stored
         for link in links:
+            if i == args.num:
+                break
             linksList.append(link.get('href'))
             i += 1
 
@@ -208,11 +211,36 @@ if __name__ == '__main__':
     print(RED + "Your soup is ready!\n" + NORM)
     print(RED + "Your selected settings for this soup were:\nItem: " + args.item + "\nLower bounds: " + str(args.lower) + "\nUpper bounds: " + str(args.upper) + "\nNumber of links: " + str(args.num) + NORM)
 
-    count = 1
+    itemNum = 1
     # Print the items to the console
     for item in allItems:
-        print(GREEN + f"Item #{count}:\n" + NORM)
-        print(item.toString())
-        count += 1
+        productPrice = item.getPrice()
+        if productPrice != "NA" and args.upper or args.lower:
+            if args.lower and args.upper and args.lower <= productPrice <= args.upper:
+                print(GREEN + f"Item #{itemNum}:\n" + NORM)
+                print(item.toString())
+                item.writeToCSV()
+            elif args.lower == None and args.upper and productPrice <= args.upper:
+                print(GREEN + f"Item #{itemNum}:\n" + NORM)
+                print(item.toString())
+                item.writeToCSV()
+            elif args.upper == None and args.lower and args.lower <= productPrice:
+                print(GREEN + f"Item #{itemNum}:\n" + NORM)
+                print(item.toString())
+                item.writeToCSV()
+            elif args.upper == None and args.lower == None:
+                print(GREEN + f"Item #{itemNum}:\n" + NORM)
+                print(item.toString())
+                item.writeToCSV()
+        else:
+            print(GREEN + f"Item #{itemNum}:\n" + NORM)
+            print(item.toString())
+            item.writeToCSV()
+        itemNum += 1
+    
+    if args.cheap:
+        print(GREEN + f"The cheapest item out of all the data pulled is: \n" + NORM)
+        pos = getCheapestItem()
+        print(allItems[pos].toString())
 
     File.close()
