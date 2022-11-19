@@ -91,7 +91,7 @@ def main(URL):
 
     # Creating the Soup Object containing all data
     soup = BeautifulSoup(webpage.content, "lxml")
-    print("Collecting website data...")
+    print(GREEN + "Collecting website data..." + NORM)
     # Get product price
     productPrice = float(getPrice(soup).replace('$', ''))
 
@@ -152,9 +152,9 @@ if __name__ == '__main__':
     parser.print_help()
     args = parser.parse_args()
     args.item = "yoga mats"
-    args.num = 5
-    args.lower = 40
-    args.upper = 70
+    args.num = 3
+    args.lower = 30
+    args.upper = 100
 
     # If the user doesn't give an item, close the program.
     if args.item == None:
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     # HTTP Request with random delay
     time.sleep(0.5 * random.random())
     webpage = requests.get(URL, headers=HEADERS)
-    print(webpage)
+    print(BLUE + "Successfully connected to the webpage...\n" + RED + "Starting the soup..." + NORM if webpage.status_code == 200 else "Connection failed.")
 
     # Soup Object containing all data
     soup = BeautifulSoup(webpage.content, "lxml")
@@ -201,6 +201,8 @@ if __name__ == '__main__':
 
     print(RED + "Your soup is ready!\n" + NORM)
     count = 1
+
+    print(RED + "Your selected settings for this soup were:\nItem: " + args.item + "\nLower bounds: " + str(args.lower) + "\nUpper bounds: " + str(args.upper) + "\nNumber of links: " + str(args.num) + NORM)
     # Print the items to the console
     for item in allItems:
         print(GREEN + f"Item #{count}:\n" + NORM)
