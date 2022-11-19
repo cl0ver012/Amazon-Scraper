@@ -103,7 +103,8 @@ def main(URL):
     productTitle = getTitle(soup)
 
     # Get product price
-    productPrice = float(getPrice(soup).replace('$', ''))
+    price = getPrice(soup).replace('$', '')
+    productPrice = float(price) if price != "NA" else price
 
     # Get product rating
     productRating = getProductRating(soup)
