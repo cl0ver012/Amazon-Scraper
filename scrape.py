@@ -1,9 +1,17 @@
 import argparse
+from operator import attrgetter, itemgetter
 import random
 import sys
 import time
 from bs4 import BeautifulSoup
 import requests
+
+# Different possible colors
+BLUE = '\033[34m'
+RED = '\033[91m'
+GREEN = '\033[92m'
+NORM = '\x1b[0m'
+tag = "@Moffi-bit"
 
 # Products
 class Item():
@@ -18,13 +26,14 @@ class Item():
     def getPrice(self):
         return float(self.price.replace('$', '').replace(',', '')) if self.price != "NA" else self.price
 
-    def writeToCSV(self):
+    def writeToCSV(self, File):
         File.write(f"{self.title},")
         File.write(f"{self.price},")
         File.write(f"{self.rating},")
         File.write(f"{self.reviews},")
         File.write(f"{self.availability},")
         File.write(f"{self.URL},\n")
+        File.close()
 
     def toString(self):
         return BLUE + f"Product's title: {self.title}\n" + f"Product's price: {self.price}\n" + f"Product's rating: {self.rating}\n" + f"Total number of product reviews: {self.reviews}\n" + f"Product's availability: {self.availability}\n" + f"Product's URL: {self.URL}\n" + NORM 
@@ -114,70 +123,8 @@ def getProductAvailability(soup):
 
     return productAvailability
 
-def main(URL):
-    HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36', 'Accept-Language': 'en-US, en;q=0.5', "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"})
-
-    # Making the HTTP Request
-    time.sleep(0.5 * random.random())
-    webpage = requests.get(URL, headers=HEADERS)
-
-    # Creating the Soup Object containing all data
-    soup = BeautifulSoup(webpage.content, "lxml")
-    print(GREEN + "Collecting item data..." + NORM)
-
-    # Getting product title
-    productTitle = getTitle(soup)
-
-    # Get product price
-    productPrice = getPrice(soup)
-
-    # Get product rating
-    productRating = getProductRating(soup)
-
-    # Get number of product reviews
-    numberOfReviews = getProductReviews(soup)
-
-    # Get product availability
-    productAvailability = getProductAvailability(soup)
-
-    productPrice = float(productPrice.replace('$', '').replace(',', '')) if productPrice != "NA" else "NA"
-    
-    if productPrice != "NA":
-        if args.lower and args.upper and args.lower <= productPrice and productPrice <= args.upper:
-            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-            allItems.append(item)
-        elif args.lower == None and args.upper and productPrice <= args.upper:
-            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-            allItems.append(item)
-        elif args.upper == None and args.lower and args.lower <= productPrice:
-            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-            allItems.append(item)
-        elif args.upper == None and args.lower == None:
-            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-            allItems.append(item)
-
-if __name__ == '__main__':
-    # Different possible colors
-    BLUE = '\033[34m'
-    RED = '\033[91m'
-    GREEN = '\033[92m'
-    NORM = '\x1b[0m'
-    tag = "@Moffi-bit"
-
-    allItems = []
-
-    # Print the banner to the console
-    print(GREEN + """
-    _                            ___                            
-   /_\  _ __  __ _ ______ _ _   / __| __ _ _ __ _ _ __  ___ _ _ 
-  / _ \| '  \/ _` |_ / _ \ ' \  \__ \/ _| '_/ _` | '_ \/ -_) '_|
- /_/ \_\_|_|_\__,_/__\___/_||_| |___/\__|_| \__,_| .__/\___|_|  
-                                                 |_|                                                                                                                   
-    """ + NORM)
-    time.sleep(1)
-
-    File = open("./out.csv", "a", encoding="utf-8")
-
+# Get the args the user passed in
+def parseArgs():
     parser = argparse.ArgumentParser(description=GREEN + "Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items.\nFor more information on how to use it run the program using -h or --help. (* = required field)" + RED + "\nCreator " + tag + NORM)
     parser.add_argument("-i", "--item", help="enter the item you want to search for (*)", type=str, nargs="+")
     parser.add_argument("-l", "--lower", help="enter the lower bound product price", type=int)
@@ -187,18 +134,22 @@ if __name__ == '__main__':
     # parser.print_help()
     args = parser.parse_args()
 
+    return args
+
+# Make sure that the mandatory args are passed in
+def processArgs(args):
     # If the user doesn't give an item, close the program.
     if args.item == None:
         print("Item argument not specified. Program terminating...")
         time.sleep(1)
-        sys.exit()
+        sys.exit(1)
 
     # If the user doesn't give the number of links to scrape, close the program.
     if args.num == None:
         print("Number of links argument not specified. Program terminating...")
         time.sleep(1)
-        sys.exit()
-
+        sys.exit(1)
+    
     # Get all the parts of the search
     search = ""
     for element in args.item:
@@ -206,10 +157,8 @@ if __name__ == '__main__':
 
     args.item = search
 
-    # Request information. Using headers to trick Amazon webpage
-    HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36 Gecko/20100101 Firefox/50.0','Accept-Language': 'en-US', "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"})
-    URL = f"https://www.amazon.com/s?k={args.item}"
-
+# Get all the necessary pages need to collect the amount of links the user wants
+def getItemLinksFromPages(args, URL, HEADERS):
     page = 1
     i = 0
     linksList = []
@@ -235,33 +184,105 @@ if __name__ == '__main__':
 
         URL += f"&page={page}"
         page += 1
+    
+    return linksList
+
+# Loop through all the item links retrieved and collect the data based on the args
+def processItemLinks(args, linksList, HEADERS):
+    # Where the items will be stored
+    allItems = []
 
     # Finally get the data from each URL from the search
     for link in linksList:
-        main("http://amazon.com" + link)
+        URL = "http://amazon.com" + link
+        # Making the HTTP Request
+        time.sleep(0.5 * random.random())
+        webpage = requests.get(URL, headers=HEADERS)
 
-    print(RED + "Your soup is ready!\n" + NORM)
-    print(RED + "Your selected settings for this soup were:\nItem: " + args.item + "\nLower bounds: " + str(args.lower) + "\nUpper bounds: " + str(args.upper) + "\nNumber of links: " + str(args.num) + NORM)
+        # Creating the Soup Object containing all data
+        soup = BeautifulSoup(webpage.content, "lxml")
+        print(GREEN + "Collecting item data..." + NORM)
 
+        # Getting product title
+        productTitle = getTitle(soup)
+
+        # Get product price
+        productPrice = getPrice(soup)
+
+        # Get product rating
+        productRating = getProductRating(soup)
+
+        # Get number of product reviews
+        numberOfReviews = getProductReviews(soup)
+
+        # Get product availability
+        productAvailability = getProductAvailability(soup)
+
+        productPrice = productPrice.replace(' ', '')
+
+        if not productPrice.isalnum():
+            productPrice = float(productPrice.replace('$', '').replace(',', '')) 
+            if args.lower and args.upper and args.lower <= productPrice and productPrice <= args.upper:
+                item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                allItems.append(item)
+            elif args.lower == None and args.upper and productPrice <= args.upper:
+                item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                allItems.append(item)
+            elif args.upper == None and args.lower and args.lower <= productPrice:
+                item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                allItems.append(item)
+            elif args.upper == None and args.lower == None:
+                item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                allItems.append(item)
+
+    return allItems
+
+# Output the results to the console
+def outputData(args, allItems):
     itemNum = 1
     # Print the items to the console
     for item in allItems:
         print(GREEN + f"Item #{itemNum}:\n" + NORM)
         print(item.toString())
-        item.writeToCSV()
+        with open("./out.csv", "a", encoding="utf-8") as file:
+            item.writeToCSV(file)
         itemNum += 1
 
     # If they specified that they want the cheapest item, return the cheapest.
     if args.cheap:
-        lowestPrice = 100000000
-        indexOfLowest = 0
-
-        for i in range(len(allItems)):
-            if allItems[i].getPrice() < lowestPrice:
-                lowestPrice = allItems[i].getPrice()
-                indexOfLowest = i
-
+        allItems = sorted(allItems, key=lambda item: item.price)
         print(GREEN + f"The cheapest item out of all the data pulled is: \n" + NORM)
-        print(allItems[indexOfLowest].toString())
+        print(allItems[0].toString())
 
-    File.close()
+def main():
+    # Print the banner to the console
+    print(GREEN + """
+    _                            ___                            
+   /_\  _ __  __ _ ______ _ _   / __| __ _ _ __ _ _ __  ___ _ _ 
+  / _ \| '  \/ _` |_ / _ \ ' \  \__ \/ _| '_/ _` | '_ \/ -_) '_|
+ /_/ \_\_|_|_\__,_/__\___/_||_| |___/\__|_| \__,_| .__/\___|_|  
+                                                 |_|                                                                                                                   
+    """ + NORM)
+    time.sleep(1)
+
+    args = parseArgs()
+    processArgs(args)
+
+    # Request information. Using headers to trick Amazon webpage
+    HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36 Gecko/20100101 Firefox/50.0','Accept-Language': 'en-US', "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"})
+    URL = f"https://www.amazon.com/s?k={args.item}"
+
+    # Get all the item links from every page needed
+    linksList = getItemLinksFromPages(args, URL, HEADERS)
+    
+    # Process all the item links and get the list including the relevant ones
+    allItems = processItemLinks(args, linksList, HEADERS)
+
+    print(RED + "Your soup is ready!\n" + NORM)
+    print(RED + "Your selected settings for this soup were:\nItem: " + args.item + "\nLower bounds: " + str(args.lower) + "\nUpper bounds: " + str(args.upper) + "\nNumber of links: " + str(args.num) + "\nReturn the cheapest: " + str(args.cheap) + NORM)
+
+    # Output the data
+    outputData(args, allItems)
+
+if __name__ == '__main__':
+    main()
