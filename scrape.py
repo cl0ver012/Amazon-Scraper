@@ -93,7 +93,7 @@ def main(URL):
     HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36', 'Accept-Language': 'en-US, en;q=0.5', "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"})
 
     # Making the HTTP Request
-    time.sleep(0.5 * random.random())
+    # time.sleep(0.5 * random.random())
     webpage = requests.get(URL, headers=HEADERS)
 
     # Creating the Soup Object containing all data
@@ -154,13 +154,20 @@ if __name__ == '__main__':
     File = open("./out.csv", "a", encoding="utf-8")
 
     parser = argparse.ArgumentParser(description=GREEN + "Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items.\nFor more information on how to use it run the program using -h or --help. (* = required field)" + RED + "\nCreator " + tag + NORM)
-    parser.add_argument("-i", "--item", help="enter the item you want to search for (*)", type=str)
+    parser.add_argument("-i", "--item", help="enter the item you want to search for (*)", type=str, nargs="+")
     parser.add_argument("-l", "--lower", help="enter the lower bound product price", type=int)
     parser.add_argument("-u", "--upper", help="enter the upper bound product price", type=int)
     parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended 50+) (*)", type=int)
     parser.add_argument("-c", dest="cheap", help="add this argument if you want the program to return the cheapest item at the end of scraping", action="store_true")
     # parser.print_help()
     args = parser.parse_args()
+
+    # Get all the parts of the search
+    search = ""
+    for element in args.item:
+        search += element
+
+    args.item = search
 
     # If the user doesn't give an item, close the program.
     if args.item == None:
@@ -215,8 +222,8 @@ if __name__ == '__main__':
     # Print the items to the console
     for item in allItems:
         productPrice = item.getPrice()
-        if productPrice != "NA" and args.upper or args.lower:
-            if args.lower and args.upper and args.lower <= productPrice <= args.upper:
+        if productPrice != "NA" and (args.upper or args.lower):
+            if args.lower and args.upper and args.lower <= productPrice and productPrice <= args.upper:
                 print(GREEN + f"Item #{itemNum}:\n" + NORM)
                 print(item.toString())
                 item.writeToCSV()
