@@ -2,7 +2,7 @@
 
 ![Amazon Scraper](https://i.imgur.com/Dh9IW25.png)
 
-Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items. Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more to come!
+Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more!
 
 ## Dependencies:
 
