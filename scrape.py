@@ -31,10 +31,12 @@ class Item():
 
 # Get the title of the product
 def getTitle(soup):
-    try:
-        productTitle = soup.find("span", attrs={"id": 'productTitle'}).text.strip()
-    except:
-        productTitle = "No title."
+    productTitle = soup.find("span", attrs={"id": 'productTitle'})
+
+    if productTitle != None:
+        productTitle = productTitle.text.strip()
+    else:
+        productTitle = "NA"
 
     return productTitle
 
@@ -59,33 +61,56 @@ def getPrice(soup):
     else:
         productPrice = "NA"
 
+    if productPrice == "NA":
+        otherPriceOption = soup.find("span", {"id": "priceblock_ourprice"})
+        productPrice = otherPriceOption.text.strip() if otherPriceOption != None else "NA"
+
+    if productPrice == "NA":
+        productPrice = soup.find("span", {"class": "a-offscreen"})
+        productPrice = productPrice.text.strip() if productPrice != None else "NA"
+
+    if productPrice == "NA":
+        productPrice = soup.find("span", {"class": "a-price-whole"})
+        productPrice = productPrice.text.strip() if productPrice != None else "NA"
+
     return productPrice
 
 # Get the product's rating out of 5.0
 def getProductRating(soup):
-    try:
-        productRating = soup.find("span", attrs={"class": "reviewCountTextLinkedHistogram"})["title"].strip()
-    except:
-        productRating = "No rating."
+    productRating = soup.find("span", attrs={"class": "reviewCountTextLinkedHistogram"})
+    
+    if productRating != None:
+        productRating = productRating["title"].strip()
+    else:
+        productRating = "NA"
 
     return productRating
 
 # Get the total number of product reviews
 def getProductReviews(soup):
-    try:
-        numberOfReviews = soup.find("span", attrs={'id': 'acrCustomerReviewText'}).string.strip().replace(',', '')
-    except:
-        numberOfReviews = "No reviews."
+    numberOfReviews = soup.find("span", attrs={'id': 'acrCustomerReviewText'})
+
+    if numberOfReviews != None:
+        numberOfReviews = numberOfReviews.text.strip().replace(',', '')
+    else:
+        numberOfReviews = "NA"
 
     return numberOfReviews
 
 # Gets product's availability (e.g in stock, how many left, out of stock)
 def getProductAvailability(soup):
-    try:
-        productAvailabilityDiv = soup.find("div", attrs={'id': 'availability'})
-        productAvailability = productAvailabilityDiv.find("span").string.strip().replace(',', '')
-    except:
-        productAvailability = "No availability."
+    productAvailabilityDiv = soup.find("div", attrs={'id': 'availability'})
+
+    if productAvailabilityDiv != None:
+        productAvailability = productAvailabilityDiv.find("span")
+        if productAvailability != None:
+            productAvailability = productAvailability.text.strip().replace(',', '')
+    else:
+        productAvailability = "NA"
+
+    if productAvailability == "NA":
+        productAvailability = soup.find("span", attrs={"class": "a-size-medium"})
+        productAvailability = productAvailability.text.strip() if productAvailability != None else "NA"
 
     return productAvailability
 
@@ -115,21 +140,22 @@ def main(URL):
     # Get product availability
     productAvailability = getProductAvailability(soup)
 
-    item = Item(productTitle, productPrice, productRating, numberOfReviews, productAvailability, URL)
-    allItems.append(item)
-
-def getCheapestItem():
-    lowestPrice = allItems[0].getPrice()
-    indexOfLowest = 0
-
-    for i in range(len(allItems)):
-        if allItems[i].getPrice() != "NA" and lowestPrice != "NA":
-            if allItems[i].getPrice() < lowestPrice:
-                lowestPrice = allItems[i].getPrice()
-                indexOfLowest = i
-
-    return indexOfLowest
-
+    print(productPrice)
+    productPrice = float(productPrice.replace('$', '').replace(',', '')) if productPrice != "NA" else "NA"
+    
+    if productPrice != "NA":
+        if args.lower and args.upper and args.lower <= productPrice and productPrice <= args.upper:
+            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+            allItems.append(item)
+        elif args.lower == None and args.upper and productPrice <= args.upper:
+            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+            allItems.append(item)
+        elif args.upper == None and args.lower and args.lower <= productPrice:
+            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+            allItems.append(item)
+        elif args.upper == None and args.lower == None:
+            item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+            allItems.append(item)
 
 if __name__ == '__main__':
     # Different possible colors
@@ -162,13 +188,6 @@ if __name__ == '__main__':
     # parser.print_help()
     args = parser.parse_args()
 
-    # Get all the parts of the search
-    search = ""
-    for element in args.item:
-        search += element
-
-    args.item = search
-
     # If the user doesn't give an item, close the program.
     if args.item == None:
         print("Item argument not specified. Program terminating...")
@@ -180,6 +199,13 @@ if __name__ == '__main__':
         print("Number of links argument not specified. Program terminating...")
         time.sleep(1)
         sys.exit()
+
+    # Get all the parts of the search
+    search = ""
+    for element in args.item:
+        search += element + " "
+
+    args.item = search
 
     # Request information. Using headers to trick Amazon webpage
     HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36 Gecko/20100101 Firefox/50.0','Accept-Language': 'en-US'})
@@ -221,33 +247,22 @@ if __name__ == '__main__':
     itemNum = 1
     # Print the items to the console
     for item in allItems:
-        productPrice = item.getPrice()
-        if productPrice != "NA" and (args.upper or args.lower):
-            if args.lower and args.upper and args.lower <= productPrice and productPrice <= args.upper:
-                print(GREEN + f"Item #{itemNum}:\n" + NORM)
-                print(item.toString())
-                item.writeToCSV()
-            elif args.lower == None and args.upper and productPrice <= args.upper:
-                print(GREEN + f"Item #{itemNum}:\n" + NORM)
-                print(item.toString())
-                item.writeToCSV()
-            elif args.upper == None and args.lower and args.lower <= productPrice:
-                print(GREEN + f"Item #{itemNum}:\n" + NORM)
-                print(item.toString())
-                item.writeToCSV()
-            elif args.upper == None and args.lower == None:
-                print(GREEN + f"Item #{itemNum}:\n" + NORM)
-                print(item.toString())
-                item.writeToCSV()
-        else:
-            print(GREEN + f"Item #{itemNum}:\n" + NORM)
-            print(item.toString())
-            item.writeToCSV()
+        print(GREEN + f"Item #{itemNum}:\n" + NORM)
+        print(item.toString())
+        item.writeToCSV()
         itemNum += 1
-    
+
+    # If they specified that they want the cheapest item, return the cheapest.
     if args.cheap:
+        lowestPrice = 100000000
+        indexOfLowest = 0
+
+        for i in range(len(allItems)):
+            if allItems[i].getPrice() < lowestPrice:
+                lowestPrice = allItems[i].getPrice()
+                indexOfLowest = i
+
         print(GREEN + f"The cheapest item out of all the data pulled is: \n" + NORM)
-        pos = getCheapestItem()
-        print(allItems[pos].toString())
+        print(allItems[indexOfLowest].toString())
 
     File.close()
