@@ -1,6 +1,8 @@
 # Amazon-Scraper: Find your perfect item!
-          
-Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items. Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more to come!
+
+![Amazon Scraper](https://i.imgur.com/Dh9IW25.png)
+
+Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more!
 
 ## Dependencies:
 
@@ -33,7 +35,7 @@ cd Amazon-Scraper
 Usage: 
 
 ```
-usage: scrape.py [-h] [-i ITEM] [-l LOWER] [-u UPPER] [-n NUM] [-c]
+usage: scrape.py [-h] [-i ITEM [ITEM ...]] [-l LOWER] [-u UPPER] [-n NUM] [-c]
 Note: Adding -c to the arguments will cause the program to print the cheapest item at the end of scraping
 ```
 
@@ -77,15 +79,11 @@ title,price,rating,reviews,availability,url
 
 The CSV contains **ALL** of the relevant items scraped
 
-## Demo:
-
-Coming soon...
-
 ## Future Improvements
 
 * [x] Pulling product information
 * [x] Output CSV
 * [x] Multiple page scraping
-* [x] Return the cheapest item (if specified with -c)
+* [x] Return the cheapest item 
 * [ ] Consistency of finding product information
  
