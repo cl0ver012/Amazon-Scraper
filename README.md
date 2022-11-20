@@ -97,7 +97,7 @@ py scrape.py -c
 
 Tells the program that you want it to output the cheapest item after it's scraped all links.
 
-#### Example Commands:
+#### Examples of Possible Run Commands:
 
 Get all items within a price range (USD):
 
@@ -145,5 +145,6 @@ The CSV contains **ALL** of the relevant items scraped
 * [x] Output CSV
 * [x] Multiple page scraping
 * [x] Return the cheapest item 
+* [ ] Becoming stealthier (e.g adding proxies, optimized headers, etc)
 * [ ] Consistency of finding product information
  
