@@ -10,7 +10,7 @@ Functionality: scraping multiple amazon web pages for your item, setting a price
 * requests
 * lxml (for parsing)
 
-## How to use:
+## How to use (NOTE: -i or --item and -n or --num are required fields):
 
 ### Get the repository: 
 

@@ -118,7 +118,7 @@ def main(URL):
     HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36', 'Accept-Language': 'en-US, en;q=0.5', "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"})
 
     # Making the HTTP Request
-    # time.sleep(0.5 * random.random())
+    time.sleep(0.5 * random.random())
     webpage = requests.get(URL, headers=HEADERS)
 
     # Creating the Soup Object containing all data
@@ -140,7 +140,6 @@ def main(URL):
     # Get product availability
     productAvailability = getProductAvailability(soup)
 
-    print(productPrice)
     productPrice = float(productPrice.replace('$', '').replace(',', '')) if productPrice != "NA" else "NA"
     
     if productPrice != "NA":
@@ -208,10 +207,10 @@ if __name__ == '__main__':
     args.item = search
 
     # Request information. Using headers to trick Amazon webpage
-    HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36 Gecko/20100101 Firefox/50.0','Accept-Language': 'en-US'})
+    HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36 Gecko/20100101 Firefox/50.0','Accept-Language': 'en-US', "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"})
     URL = f"https://www.amazon.com/s?k={args.item}"
 
-    page = 0
+    page = 1
     i = 0
     linksList = []
     # Loop for extracting the link content from the href tag
@@ -219,7 +218,7 @@ if __name__ == '__main__':
         # HTTP Request with random delay
         time.sleep(0.5 * random.random())
         webpage = requests.get(URL, headers=HEADERS)
-        print(BLUE + "Successfully connected to the webpage...\n" + RED + "Starting the soup...\n" + GREEN + "Exracting all page item links..." + NORM if webpage.status_code == 200 else "Connection failed.")
+        print(BLUE + f"Successfully connected to the #{page} webpage...\n" + RED + "Starting the soup...\n" + GREEN + "Exracting all item links..." + NORM if webpage.status_code == 200 else "Connection failed.")
 
         # Soup Object containing all data
         soup = BeautifulSoup(webpage.content, "lxml")
@@ -234,8 +233,8 @@ if __name__ == '__main__':
             linksList.append(link.get('href'))
             i += 1
 
-        page += 1
         URL += f"&page={page}"
+        page += 1
 
     # Finally get the data from each URL from the search
     for link in linksList:
