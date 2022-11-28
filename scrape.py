@@ -33,7 +33,6 @@ class Item():
         File.write(f"{self.reviews},")
         File.write(f"{self.availability},")
         File.write(f"{self.URL},\n")
-        File.close()
 
     def toString(self):
         return BLUE + f"Product's title: {self.title}\n" + f"Product's price: {self.price}\n" + f"Product's rating: {self.rating}\n" + f"Total number of product reviews: {self.reviews}\n" + f"Product's availability: {self.availability}\n" + f"Product's URL: {self.URL}\n" + NORM 
@@ -241,12 +240,13 @@ def processItemLinks(args, linksList, HEADERS):
 def outputData(args, allItems):
     itemNum = 1
     # Print the items to the console
-    for item in allItems:
-        print(GREEN + f"Item #{itemNum}:\n" + NORM)
-        print(item.toString())
-        with open("./out.csv", "a", encoding="utf-8") as file:
+    with open("./out.csv", "a", encoding="utf-8") as file:
+        for item in allItems:
+            print(GREEN + f"Item #{itemNum}:\n" + NORM)
+            print(item.toString())
             item.writeToCSV(file)
-        itemNum += 1
+            itemNum += 1
+    file.close()
 
     # If they specified that they want the cheapest item, return the cheapest.
     if args.cheap:
@@ -278,11 +278,14 @@ def main():
     # Process all the item links and get the list including the relevant ones
     allItems = processItemLinks(args, linksList, HEADERS)
 
+    # Soup is done
     print(RED + "Your soup is ready!\n" + NORM)
-    print(RED + "Your selected settings for this soup were:\nItem: " + args.item + "\nLower bounds: " + str(args.lower) + "\nUpper bounds: " + str(args.upper) + "\nNumber of links: " + str(args.num) + "\nReturn the cheapest: " + str(args.cheap) + NORM)
 
     # Output the data
     outputData(args, allItems)
+
+    # Print the selected settings
+    print(RED + "Your selected settings for this soup were:\nItem: " + args.item + "\nLower bounds: " + str(args.lower) + "\nUpper bounds: " + str(args.upper) + "\nNumber of links: " + str(args.num) + "\nReturn the cheapest: " + str(args.cheap) + NORM)
 
 if __name__ == '__main__':
     main()
