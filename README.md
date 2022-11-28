@@ -8,7 +8,7 @@ Functionality: scraping multiple amazon web pages for your item, setting a price
 
 * bs4 (BeautifulSoup4)
 * requests
-* lxml (for parsing)
+* lxml 
 
 ## How to use (NOTE: -i or --item and -n or --num are required fields):
 
@@ -146,5 +146,5 @@ The CSV contains **ALL** of the relevant items scraped
 * [x] Multiple page scraping
 * [x] Return the cheapest item 
 * [ ] Becoming stealthier (e.g adding proxies, optimized headers, etc)
-* [ ] Consistency of finding product information
+* [x] Consistency of finding product information
  
