@@ -14,7 +14,8 @@ tag = "@Moffi-bit"
 
 # Products
 class Item():
-    def __init__(self, title, price, rating, reviews, availability, URL):
+    def __init__(self, num, title, price, rating, reviews, availability, URL):
+        self.num = num
         self.title = title
         self.price = price
         self.rating = rating
@@ -33,8 +34,25 @@ class Item():
         File.write(f"{self.availability},")
         File.write(f"{self.URL},\n")
 
+    def eval(self):
+        rating = str(self.rating).split(" ")
+        reviews = str(self.reviews).split(" ")
+
+        try:
+            if float(rating[0]) <= 3 and int(reviews[0]) >= 500:
+                return RED + "BAD"
+            else:
+                return GREEN + "GOOD"
+        except:
+            return NORM + "N/A"
+
+
     def toString(self):
-        return BLUE + f"Product's title: {self.title}\n" + f"Product's price: {self.price}\n" + f"Product's rating: {self.rating}\n" + f"Total number of product reviews: {self.reviews}\n" + f"Product's availability: {self.availability}\n" + f"Product's URL: {self.URL}\n" + NORM 
+        # item num, link, price, rank
+        output = " {:^7} | {:<60} | {:<7} | {:^7} "
+        output = output.format(GREEN + f"{self.num}" + NORM, f"{self.URL[:95]}", GREEN + f"{self.price}" + NORM, self.eval(), width=90)
+
+        return output + "\n" + NORM
 
 # Get the title of the product
 def getTitle(soup):
@@ -189,6 +207,7 @@ def getItemLinksFromPages(args, URL, HEADERS):
 def processItemLinks(args, linksList, HEADERS):
     # Where the items will be stored
     allItems = []
+    itemNum = 1
 
     # Finally get the data from each URL from the search
     for link in linksList:
@@ -221,31 +240,37 @@ def processItemLinks(args, linksList, HEADERS):
         if not productPrice.isalnum():
             productPrice = float(productPrice.replace('$', '').replace(',', '')) 
             if args.lower and args.upper and args.lower <= productPrice and productPrice <= args.upper:
-                item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                 allItems.append(item)
             elif args.lower == None and args.upper and productPrice <= args.upper:
-                item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                 allItems.append(item)
             elif args.upper == None and args.lower and args.lower <= productPrice:
-                item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                 allItems.append(item)
             elif args.upper == None and args.lower == None:
-                item = Item(productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                 allItems.append(item)
+            itemNum += 1
 
     return allItems
 
 # Output the results to the console
 def outputData(args, allItems):
-    itemNum = 1
+    output = "Item # |{:^95}| Price | Rank\n"
+    output = output.format("Link")
+    
+    for _ in range(len(output)):
+        output += "-"
+    output += "\n"
+
     # Print the items to the console
     with open("./out.csv", "a", encoding="utf-8") as file:
         for item in allItems:
-            print(GREEN + f"Item #{itemNum}:\n" + NORM)
-            print(item.toString())
+            output += item.toString()
             item.writeToCSV(file)
-            itemNum += 1
     file.close()
+    print(output)
 
     # If they specified that they want the cheapest item, return the cheapest.
     if args.cheap:
