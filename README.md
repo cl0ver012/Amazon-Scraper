@@ -145,6 +145,6 @@ The CSV contains **ALL** of the relevant items scraped
 * [x] Output CSV
 * [x] Multiple page scraping
 * [x] Return the cheapest item 
-* [ ] Becoming stealthier (e.g adding proxies, optimized headers, etc)
+* [ ] Becoming stealthier (e.g optimized headers, etc)
 * [x] Consistency of finding product information
  
