@@ -26,13 +26,13 @@ class Item():
     def getPrice(self):
         return float(self.price.replace('$', '').replace(',', '')) if self.price != "NA" else self.price
 
-    def writeToCSV(self, File):
-        File.write(f"{self.title},")
-        File.write(f"{self.price},")
-        File.write(f"{self.rating},")
-        File.write(f"{self.reviews},")
-        File.write(f"{self.availability},")
-        File.write(f"{self.URL},\n")
+    def writeToCSV(self, file):
+        file.write(f"{self.title},")
+        file.write(f"{self.price},")
+        file.write(f"{self.rating},")
+        file.write(f"{self.reviews},")
+        file.write(f"{self.availability},")
+        file.write(f"{self.URL},\n")
 
     def eval(self):
         rating = str(self.rating).split(" ")
