@@ -1,6 +1,6 @@
 # Amazon-Scraper: Find your perfect item!
 
-![Amazon Scraper](https://i.imgur.com/Dh9IW25.png)
+![Amazon Scraper](https://i.imgur.com/IR2ppw9.png)
 
 Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more!
 
@@ -15,8 +15,8 @@ Functionality: scraping multiple amazon web pages for your item, setting a price
 ### Get the repository: 
 
 ```
-mkdir Amazon Scraper
-cd Amazon Scraper
+mkdir "Amazon Scraper"
+cd "Amazon Scraper"
 git clone https://github.com/Moffi-bit/Amazon-Scraper.git
 ```
 
