@@ -75,7 +75,8 @@ class Item():
 class Scraper():
     def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False, out: str = "./out.csv"):
         self.parseArgs()
-        if self.args.item and self.args.num and self.args.num != 0:
+
+        if self.args.item and self.args.num and self.args.num > 0:
             self.provided = True
             self.processArgs()
             return
@@ -209,10 +210,13 @@ class Scraper():
             sys.exit(1)
 
         # If the user doesn't give the number of links to scrape, close the program.
-        if self.args.num == None or self.args.num == 0:
+        if self.args.num == None or self.args.num <= 0:
             print("Number of links argument not specified. Program terminating...")
             time.sleep(1)
             sys.exit(1)
+
+        if self.args.out == None:
+            self.args.out = "out"
 
         if ".csv" not in self.args.out:
             self.args.out += ".csv"
