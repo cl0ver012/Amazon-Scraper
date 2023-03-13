@@ -74,26 +74,17 @@ class Item():
 class Scraper():
     def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False):
         self.parseArgs()
-        if self.args.item and self.args.num:
+        if self.args.item and self.args.num and self.args.num != 0:
             self.provided = True
             self.processArgs()
             return
 
-        if item == None and lower == 0 and upper == 0 and num == 0 and not cheap:
-            # Try to parse args if constructor is called with no parameters
-            print("No parameters provided... attempting to parse arguments")
-            self.provided = False
-        elif item and num:
-            self.args.item = item
-            self.args.num = num
-            self.provided = False
-        else:
-            self.args.item = item
-            self.args.lower = lower
-            self.args.upper = upper
-            self.args.num = num
-            self.args.cheap = cheap
-            self.provided = False
+        self.args.item = item
+        self.args.lower = lower
+        self.args.upper = upper
+        self.args.num = num
+        self.args.cheap = cheap
+        self.provided = False
         
         self.processArgs()
 
@@ -216,7 +207,7 @@ class Scraper():
             sys.exit(1)
 
         # If the user doesn't give the number of links to scrape, close the program.
-        if self.args.num == None:
+        if self.args.num == None or self.args.num == 0:
             print("Number of links argument not specified. Program terminating...")
             time.sleep(1)
             sys.exit(1)
@@ -303,16 +294,16 @@ class Scraper():
 
             if not productPrice.isalnum():
                 productPrice = float(productPrice.replace('$', '').replace(',', '')) 
-                if self.args.lower and self.args.upper and self.args.lower <= productPrice and productPrice <= self.args.upper:
+                if self.args.upper == None and self.args.lower == None or (self.args.upper == 0 and self.args.lower == 0):
+                    item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                    allItems.append(item)
+                elif self.args.lower and self.args.upper and self.args.lower <= productPrice and productPrice <= self.args.upper:
                     item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
                 elif self.args.lower == None and self.args.upper and productPrice <= self.args.upper:
                     item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
                 elif self.args.upper == None and self.args.lower and self.args.lower <= productPrice:
-                    item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
-                    allItems.append(item)
-                elif self.args.upper == None and self.args.lower == None:
                     item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
                 itemNum += 1
