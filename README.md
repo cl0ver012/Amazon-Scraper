@@ -15,8 +15,8 @@ Functionality: scraping multiple amazon web pages for your item, setting a price
 ### Get the repository: 
 
 ```
-mkdir Amazon Scraper
-cd Amazon Scraper
+mkdir "Amazon Scraper"
+cd "Amazon Scraper"
 git clone https://github.com/Moffi-bit/Amazon-Scraper.git
 ```
 
