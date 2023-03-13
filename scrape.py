@@ -294,16 +294,16 @@ class Scraper():
 
             if not productPrice.isalnum():
                 productPrice = float(productPrice.replace('$', '').replace(',', '')) 
-                if self.args.upper == None and self.args.lower == None or (self.args.upper == 0 and self.args.lower == 0):
+                if (self.args.lower and self.args.lower != 0) and (self.args.upper and self.args.upper != 0) and self.args.lower <= productPrice and productPrice <= self.args.upper:
                     item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
-                elif self.args.lower and self.args.upper and self.args.lower <= productPrice and productPrice <= self.args.upper:
+                elif (self.args.lower == None or self.args.lower == 0) and self.args.upper and productPrice <= self.args.upper:
                     item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
-                elif self.args.lower == None and self.args.upper and productPrice <= self.args.upper:
+                elif (self.args.upper == None or self.args.upper == 0) and self.args.lower and self.args.lower <= productPrice:
                     item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
-                elif self.args.upper == None and self.args.lower and self.args.lower <= productPrice:
+                elif (self.args.upper == None or self.args.upper == 0) and (self.args.lower == None or self.args.lower == 0):
                     item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
                 itemNum += 1
