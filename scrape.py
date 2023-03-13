@@ -334,7 +334,7 @@ class Scraper():
             print(allItems[0].toString())
 
 def main():
-    scraper = Scraper()
+    Scraper()
 
 if __name__ == '__main__':
     main()
