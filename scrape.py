@@ -23,11 +23,12 @@ print(GREEN + """
 """ + NORM)
 time.sleep(1)
 
-parser = argparse.ArgumentParser(description=GREEN + "Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items.\nFor more information on how to use it run the program using -h or --help. (* = required field)" + RED + "\nCreator " + tag + NORM)
+parser = argparse.ArgumentParser(description=GREEN + "Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items. (* = required field)" + RED + "\nCreator " + tag + NORM)
 parser.add_argument("-i", "--item", help="enter the item you want to search for (*)", type=str, nargs="+")
 parser.add_argument("-l", "--lower", help="enter the lower bound product price", type=int)
 parser.add_argument("-u", "--upper", help="enter the upper bound product price", type=int)
-parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended 50+) (*)", type=int)
+parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended 100+) (*)", type=int)
+parser.add_argument("-o", "--out", help="enter the name of the csv you want the product information to go to", type=str)
 parser.add_argument("-c", dest="cheap", help="add this argument if you want the program to return the cheapest item at the end of scraping", action="store_true")
 
 # Products
@@ -72,13 +73,14 @@ class Item():
         return output + "\n" + NORM
     
 class Scraper():
-    def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False):
+    def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False, out: str = "./out.csv"):
         self.parseArgs()
         if self.args.item and self.args.num and self.args.num != 0:
             self.provided = True
             self.processArgs()
             return
 
+        self.args.out = out
         self.args.item = item
         self.args.lower = lower
         self.args.upper = upper
@@ -211,6 +213,9 @@ class Scraper():
             print("Number of links argument not specified. Program terminating...")
             time.sleep(1)
             sys.exit(1)
+
+        if ".csv" not in self.args.out:
+            self.args.out += ".csv"
         
         # Get all the parts of the search
         if self.provided:
@@ -320,7 +325,7 @@ class Scraper():
         output += "\n"
 
         # Print the items to the console
-        with open("./out.csv", "a", encoding="utf-8") as file:
+        with open("./" + self.args.out, "a", encoding="utf-8") as file:
             for item in allItems:
                 output += item.toString()
                 item.writeToCSV(file)
@@ -331,7 +336,10 @@ class Scraper():
         if self.args.cheap:
             allItems = sorted(allItems, key=lambda item: item.price)
             print(GREEN + f"The cheapest item out of all the data pulled is: \n" + NORM)
-            print(allItems[0].toString())
+            if len(allItems) > 0:
+                print(allItems[0].toString())
+            else:
+                print("No items were found that fit the arguments used.")
 
 def main():
     Scraper()

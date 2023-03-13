@@ -35,7 +35,7 @@ cd Amazon-Scraper
 ### Usage: 
 
 ```
-usage: scrape.py [-h] [-i ITEM [ITEM ...]] [-l LOWER] [-u UPPER] [-n NUM] [-c]
+usage: scrape.py [-h] [-i ITEM [ITEM ...]] [-l LOWER] [-u UPPER] [-n NUM] [-o OUT] [-c]
 Note: Adding -c to the arguments will cause the program to print the cheapest item at the end of scraping
 ```
 
@@ -97,6 +97,18 @@ py scrape.py -c
 
 Tells the program that you want it to output the cheapest item after it's scraped all links.
 
+**-o or --out:**
+
+```
+py scrape.py -o test
+```
+OR
+```
+py scrape.py --out test
+```
+
+Tells the program that you want the product information to be written to a csv named test. If this argument is not provided the default csv the information will go to is: "out.csv"
+
 #### Examples of Possible Run Commands:
 
 Get all items within a price range (USD):
@@ -123,10 +135,10 @@ Get all items no matter the price:
 py scrape.py -i car tires -n 100
 ```
 
-Get the cheapest item of the items scraped:
+Get the cheapest item of the items scraped and write the information to a csv named "gfxcards":
 
 ```
-py scrape.py -i rtx 3090 -n 50 -c
+py scrape.py -i rtx 3090 -n 50 -c -o gfxcards
 ```
 
 ## CSV: 
@@ -142,9 +154,10 @@ The CSV contains **ALL** of the relevant items scraped
 ## Future Improvements
 
 * [x] Pulling product information
-* [x] Output CSV
+* [x] Output CSV and functionality for choosing which CSV the data goes to
 * [x] Multiple page scraping
 * [x] Return the cheapest item 
 * [ ] Becoming stealthier (e.g optimized headers, etc)
-* [x] Consistency of finding product information
+* [x] Improve the consistency of finding product information
+* [x] Adding class functionality so you do not have to use args (e.g look at demo.py for a code example)
  
