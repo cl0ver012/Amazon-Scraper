@@ -261,8 +261,7 @@ class Scraper():
                     i -= 1 
 
                 i += 1
-
-            self.URL += f"&page={page}"
+            self.URL = self.URL.split("&page=")[0] + f"&page={page}"
             page += 1
         
         return linksList
