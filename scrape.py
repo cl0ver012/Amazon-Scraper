@@ -5,6 +5,9 @@ import sys
 import time
 from bs4 import BeautifulSoup
 import requests
+from rich.progress import track
+from headers import generateHeaders
+
 
 # Different possible colors
 BLUE = '\033[34m'
@@ -23,15 +26,24 @@ print(GREEN + """
 """ + NORM)
 time.sleep(1)
 
-parser = argparse.ArgumentParser(description=GREEN + "Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items. (* = required field)" + RED + "\nCreator " + tag + NORM)
-parser.add_argument("-i", "--item", help="enter the item you want to search for (*)", type=str, nargs="+")
-parser.add_argument("-l", "--lower", help="enter the lower bound product price", type=int)
-parser.add_argument("-u", "--upper", help="enter the upper bound product price", type=int)
-parser.add_argument("-n", "--num", help="enter the number of links you want the program to look through (recommended 100+) (*)", type=int)
-parser.add_argument("-o", "--out", help="enter the name of the csv you want the product information to go to", type=str)
-parser.add_argument("-c", dest="cheap", help="add this argument if you want the program to return the cheapest item at the end of scraping", action="store_true")
+parser = argparse.ArgumentParser(
+    description=GREEN + "Welcome to Amazon Scraper! Use this program to scrape amazon for your desired items. (* = required field)" + RED + "\nCreator " + tag + NORM)
+parser.add_argument(
+    "-i", "--item", help="enter the item you want to search for (*)", type=str, nargs="+")
+parser.add_argument(
+    "-l", "--lower", help="enter the lower bound product price", type=int)
+parser.add_argument(
+    "-u", "--upper", help="enter the upper bound product price", type=int)
+parser.add_argument(
+    "-n", "--num", help="enter the number of links you want the program to look through (recommended 100+) (*)", type=int)
+parser.add_argument(
+    "-o", "--out", help="enter the name of the csv you want the product information to go to", type=str)
+parser.add_argument("-c", dest="cheap",
+                    help="add this argument if you want the program to return the cheapest item at the end of scraping", action="store_true")
 
 # Products
+
+
 class Item():
     def __init__(self, num, title, price, rating, reviews, availability, URL):
         self.num = num
@@ -64,14 +76,16 @@ class Item():
                 return GREEN + "GOOD"
         except:
             return NORM + "N/A"
-        
+
     def toString(self):
         # item num, link, price, rank
         output = " {:^7} | {:<60} | {:<7} | {:^7} "
-        output = output.format(GREEN + f"{self.num}" + NORM, f"{self.URL[:95]}", GREEN + f"{self.price}" + NORM, self.eval(), width=90)
+        output = output.format(
+            GREEN + f"{self.num}" + NORM, f"{self.URL[:95]}", GREEN + f"{self.price}" + NORM, self.eval(), width=90)
 
         return output + "\n" + NORM
-    
+
+
 class Scraper():
     def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False, out: str = "./out.csv"):
         self.parseArgs()
@@ -88,15 +102,15 @@ class Scraper():
         self.args.num = num
         self.args.cheap = cheap
         self.provided = False
-        
+
         self.processArgs()
 
     def scrape(self):
-        self.HEADERS = ({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36 Gecko/20100101 Firefox/50.0','Accept-Language': 'en-US', "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"})
+        self.HEADERS = generateHeaders()
         self.URL = f"https://www.amazon.com/s?k={self.args.item}"
         # Get all the item links from every page needed
         linksList = self.getItemLinksFromPages()
-        
+
         # Process all the item links and get the list including the relevant ones
         allItems = self.processItemLinks(linksList)
 
@@ -107,7 +121,8 @@ class Scraper():
         self.outputData(allItems)
 
         # Print the selected settings
-        print(RED + "Your selected settings for this soup were:\nItem: " + self.args.item + "\nLower bounds: " + str(self.args.lower) + "\nUpper bounds: " + str(self.args.upper) + "\nNumber of links: " + str(self.args.num) + "\nReturn the cheapest: " + str(self.args.cheap) + NORM)
+        print(RED + "Your selected settings for this soup were:\nItem: " + self.args.item + "\nLower bounds: " + str(self.args.lower) +
+              "\nUpper bounds: " + str(self.args.upper) + "\nNumber of links: " + str(self.args.num) + "\nReturn the cheapest: " + str(self.args.cheap) + NORM)
 
     # Get the title of the product
     def getTitle(self, soup):
@@ -122,20 +137,24 @@ class Scraper():
 
     # Get the price of the product and any discounts
     def getPrice(self, soup):
-        discount = soup.find("span", attrs={"class": "reinventPriceSavingsPercentageMargin savingsPercentage"})
-        priceSpan = soup.select_one("span.a-price.reinventPricePriceToPayMargin.priceToPay, span.a-price.apexPriceToPay") 
+        discount = soup.find("span", attrs={
+                             "class": "reinventPriceSavingsPercentageMargin savingsPercentage"})
+        priceSpan = soup.select_one(
+            "span.a-price.reinventPricePriceToPayMargin.priceToPay, span.a-price.apexPriceToPay")
 
         # Check to see if there is a price
         if priceSpan:
-            price = priceSpan.find("span", {"class": "a-offscreen"}).text.strip() 
+            price = priceSpan.find(
+                "span", {"class": "a-offscreen"}).text.strip()
         else:
             price = None
-    
+
         # Check to see if there is a discounted price, else just use the normal price or to NA.
-        if discount: 
-            discount = discount.text.strip() 
-            productPrice = soup.find("span", attrs={"class": "a-price a-text-price"}).text.strip() 
-        elif price: 
+        if discount:
+            discount = discount.text.strip()
+            productPrice = soup.find(
+                "span", attrs={"class": "a-price a-text-price"}).text.strip()
+        elif price:
             productPrice = price
             discount = False
         else:
@@ -157,8 +176,9 @@ class Scraper():
 
     # Get the product's rating out of 5.0
     def getProductRating(self, soup):
-        productRating = soup.find("span", attrs={"class": "reviewCountTextLinkedHistogram"})
-        
+        productRating = soup.find(
+            "span", attrs={"class": "reviewCountTextLinkedHistogram"})
+
         if productRating != None:
             productRating = productRating["title"].strip()
         else:
@@ -168,7 +188,8 @@ class Scraper():
 
     # Get the total number of product reviews
     def getProductReviews(self, soup):
-        numberOfReviews = soup.find("span", attrs={'id': 'acrCustomerReviewText'})
+        numberOfReviews = soup.find(
+            "span", attrs={'id': 'acrCustomerReviewText'})
 
         if numberOfReviews != None:
             numberOfReviews = numberOfReviews.text.strip().replace(',', '')
@@ -189,8 +210,10 @@ class Scraper():
             productAvailability = "NA"
 
         if productAvailability == "NA":
-            productAvailability = soup.find("span", attrs={"class": "a-size-medium"})
-            productAvailability = productAvailability.text.strip() if productAvailability != None else "NA"
+            productAvailability = soup.find(
+                "span", attrs={"class": "a-size-medium"})
+            productAvailability = productAvailability.text.strip(
+            ) if productAvailability != None else "NA"
 
         return productAvailability
 
@@ -220,7 +243,7 @@ class Scraper():
 
         if ".csv" not in self.args.out:
             self.args.out += ".csv"
-        
+
         # Get all the parts of the search
         if self.provided:
             search = ""
@@ -241,13 +264,15 @@ class Scraper():
             # HTTP Request with random delay
             time.sleep(0.5 * random.random())
             webpage = requests.get(self.URL, headers=self.HEADERS)
-            print(BLUE + f"Successfully connected to the #{page} webpage...\n" + RED + "Starting the soup...\n" + GREEN + "Exracting all item links..." + NORM if webpage.status_code == 200 else "Connection failed.")
+            print(BLUE + f"Successfully connected to the #{page} webpage...\n" + RED + "Starting the soup...\n" +
+                  GREEN + "Exracting all item links..." + NORM if webpage.status_code == 200 else "Connection failed.")
 
             # Soup Object containing all data
             soup = BeautifulSoup(webpage.content, "lxml")
-            
+
             # Find all of the links connected to the item search
-            links = soup.find_all("a", attrs={'class':'a-link-normal s-no-outline'})
+            links = soup.find_all(
+                "a", attrs={'class': 'a-link-normal s-no-outline'})
 
             # List where are the links are going to be stored
             for link in links:
@@ -258,12 +283,12 @@ class Scraper():
                 # Don't use links where you were redirected
                 if "picassoRedirect" in linksList[i]:
                     linksList.remove(linksList[i])
-                    i -= 1 
+                    i -= 1
 
                 i += 1
             self.URL = self.URL.split("&page=")[0] + f"&page={page}"
             page += 1
-        
+
         return linksList
 
     # Loop through all the item links retrieved and collect the data based on the args
@@ -273,7 +298,7 @@ class Scraper():
         itemNum = 1
 
         # Finally get the data from each URL from the search
-        for link in linksList:
+        for link in track(linksList, description='Collecting item data...  '):
             URL = "http://amazon.com" + link
             # Making the HTTP Request
             time.sleep(0.5 * random.random())
@@ -281,7 +306,7 @@ class Scraper():
 
             # Creating the Soup Object containing all data
             soup = BeautifulSoup(webpage.content, "lxml")
-            print(GREEN + "Collecting item data..." + NORM)
+            # print(GREEN + "Collecting item data..." + NORM)
 
             # Getting product title
             productTitle = self.getTitle(soup)
@@ -301,18 +326,23 @@ class Scraper():
             productPrice = productPrice.replace(' ', '')
 
             if not productPrice.isalnum():
-                productPrice = float(productPrice.replace('$', '').replace(',', '')) 
+                productPrice = float(
+                    productPrice.replace('$', '').replace(',', ''))
                 if (self.args.lower and self.args.lower != 0) and (self.args.upper and self.args.upper != 0) and self.args.lower <= productPrice and productPrice <= self.args.upper:
-                    item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                    item = Item(itemNum, productTitle, "$" + str(productPrice),
+                                productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
                 elif (self.args.lower == None or self.args.lower == 0) and self.args.upper and productPrice <= self.args.upper:
-                    item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                    item = Item(itemNum, productTitle, "$" + str(productPrice),
+                                productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
                 elif (self.args.upper == None or self.args.upper == 0) and self.args.lower and self.args.lower <= productPrice:
-                    item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                    item = Item(itemNum, productTitle, "$" + str(productPrice),
+                                productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
                 elif (self.args.upper == None or self.args.upper == 0) and (self.args.lower == None or self.args.lower == 0):
-                    item = Item(itemNum, productTitle, "$" + str(productPrice), productRating, numberOfReviews, productAvailability, URL)
+                    item = Item(itemNum, productTitle, "$" + str(productPrice),
+                                productRating, numberOfReviews, productAvailability, URL)
                     allItems.append(item)
                 itemNum += 1
 
@@ -322,7 +352,7 @@ class Scraper():
     def outputData(self, allItems):
         output = "Item # |{:^95}| Price | Rank\n"
         output = output.format("Link")
-        
+
         for _ in range(len(output)):
             output += "-"
         output += "\n"
@@ -344,8 +374,10 @@ class Scraper():
             else:
                 print("No items were found that fit the arguments used.")
 
+
 def main():
     Scraper()
+
 
 if __name__ == '__main__':
     main()

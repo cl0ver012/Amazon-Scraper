@@ -23,7 +23,7 @@ git clone https://github.com/Moffi-bit/Amazon-Scraper.git
 ### Install the dependencies:
 
 ```
-py -m pip install bs4 requests lxml
+py -m pip install bs4 requests lxml rich
 ```
 
 ### Moving into the cloned repository:
