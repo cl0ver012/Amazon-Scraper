@@ -1,2 +1,3 @@
 *.csv
 Pipfile
+Pipfile.lock
