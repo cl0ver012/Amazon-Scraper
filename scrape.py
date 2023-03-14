@@ -8,7 +8,6 @@ import requests
 from rich.progress import track
 from headers import generate_headers
 
-
 # Different possible colors
 BLUE = '\033[34m'
 RED = '\033[91m'
