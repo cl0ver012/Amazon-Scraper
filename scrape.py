@@ -4,6 +4,7 @@ import random
 import sys
 import time
 import json
+from pathlib import Path
 from bs4 import BeautifulSoup
 import requests
 from rich.progress import track
@@ -369,7 +370,7 @@ class Scraper():
         for _ in range(len(output)):
             output += "-"
         output += "\n"
-
+        
         # Print the items to the console
         with open("./" + self.args.out, "a", encoding="utf-8") as file:
             for item in allItems:
@@ -378,10 +379,11 @@ class Scraper():
         file.close()
         print(output)
 
-        items = {}
-        with open("./" + self.args.out.split(".csv")[0] + ".json", "a", encoding="utf-8") as json_file:
+        # Open in write mode, we want to overwrite what was previously there
+        items = {f"{self.args.item}": {}}
+        with open("./" + self.args.out.split(".csv")[0] + ".json", "w", encoding="utf-8") as json_file:
             for item in allItems:
-                items[f"{item.get_num()}"] = item.json_format()
+                items[f"{self.args.item}"][f"{item.get_num()}"] = item.json_format()
             json_file.write(json.dumps(items, indent=4))
         json_file.close()
 
