@@ -1,6 +1,6 @@
 # Amazon-Scraper: Find your perfect item!
 
-![Amazon Scraper](https://i.imgur.com/IR2ppw9.png)
+![Amazon Scraper](https://i.imgur.com/7DlRO8Q.png)
 
 Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more!
 
@@ -155,7 +155,7 @@ The CSV contains **ALL** of the relevant items scraped
 
 Format:
 
-(https://i.imgur.com/IR2ppw9.png)
+![Amazon Scraper](https://i.imgur.com/xsFHBPt.png)
 
 ## Future Improvements
 
