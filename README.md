@@ -154,10 +154,12 @@ The CSV contains **ALL** of the relevant items scraped
 ## Future Improvements
 
 * [x] Pulling product information
-* [x] Output CSV and functionality for choosing which CSV the data goes to
+* [x] CSV Output and functionality for choosing which CSV the data goes to
 * [x] Multiple page scraping
 * [x] Return the cheapest item 
-* [ ] Becoming stealthier (e.g optimized headers, etc)
+* [x] Dynamic headers (Special thanks to @mumanye for adding this functionality)
+* [ ] Using proxies?
+* [ ] JSON Output
 * [x] Improve the consistency of finding product information
 * [x] Adding class functionality so you do not have to use args (e.g look at demo.py for a code example)
  

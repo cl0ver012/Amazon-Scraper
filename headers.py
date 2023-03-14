@@ -1,7 +1,6 @@
 import random
 from collections import OrderedDict
 
-
 # accept header -> default values
 accepted = [
     'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -15,8 +14,7 @@ accepted = [
     'text/html, application/xml;q=0.9, application/xhtml+xml, image/png, image/webp, image/jpeg, image/gif, image/x-xbitmap, */*;q=0.1'
 ]
 
-
-def getplatform(userAgent):
+def get_platform(userAgent):
     if 'Windows' in userAgent:
         return 'Windows'
 
@@ -37,13 +35,12 @@ def getplatform(userAgent):
 
     return 'Unknown'
 
-
-def generateHeaders():
+def generate_headers():
     with open('user-agents.txt', 'r') as f:
         userAgents = f.readlines()
 
     userAgent = str(random.choice(userAgents)).strip()
-    platform = getplatform(userAgent)
+    platform = get_platform(userAgent)
     accept = random.choice(accepted)
 
     if platform == ('Android' or 'iOS'):

@@ -6,7 +6,7 @@ import time
 from bs4 import BeautifulSoup
 import requests
 from rich.progress import track
-from headers import generateHeaders
+from headers import generate_headers
 
 
 # Different possible colors
@@ -42,8 +42,6 @@ parser.add_argument("-c", dest="cheap",
                     help="add this argument if you want the program to return the cheapest item at the end of scraping", action="store_true")
 
 # Products
-
-
 class Item():
     def __init__(self, num, title, price, rating, reviews, availability, URL):
         self.num = num
@@ -54,10 +52,10 @@ class Item():
         self.availability = availability
         self.URL = URL
 
-    def getPrice(self):
+    def get_item_price(self):
         return float(self.price.replace('$', '').replace(',', '')) if self.price != "NA" else self.price
 
-    def writeToCSV(self, file):
+    def write_to_csv(self, file):
         file.write(f"{self.title},")
         file.write(f"{self.price},")
         file.write(f"{self.rating},")
@@ -77,7 +75,7 @@ class Item():
         except:
             return NORM + "N/A"
 
-    def toString(self):
+    def to_string(self):
         # item num, link, price, rank
         output = " {:^7} | {:<60} | {:<7} | {:^7} "
         output = output.format(
@@ -85,14 +83,14 @@ class Item():
 
         return output + "\n" + NORM
 
-
+# Object for scraping amazon products 
 class Scraper():
     def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False, out: str = "./out.csv"):
-        self.parseArgs()
+        self.parse_args()
 
         if self.args.item and self.args.num and self.args.num > 0:
             self.provided = True
-            self.processArgs()
+            self.process_args()
             return
 
         self.args.out = out
@@ -103,29 +101,29 @@ class Scraper():
         self.args.cheap = cheap
         self.provided = False
 
-        self.processArgs()
+        self.process_args()
 
     def scrape(self):
-        self.HEADERS = generateHeaders()
+        self.HEADERS = generate_headers()
         self.URL = f"https://www.amazon.com/s?k={self.args.item}"
         # Get all the item links from every page needed
-        linksList = self.getItemLinksFromPages()
+        linksList = self.get_all_item_links()
 
         # Process all the item links and get the list including the relevant ones
-        allItems = self.processItemLinks(linksList)
+        allItems = self.process_item_links(linksList)
 
         # Soup is done
         print(RED + "Your soup is ready!\n" + NORM)
 
         # Output the data
-        self.outputData(allItems)
+        self.output_data(allItems)
 
         # Print the selected settings
         print(RED + "Your selected settings for this soup were:\nItem: " + self.args.item + "\nLower bounds: " + str(self.args.lower) +
               "\nUpper bounds: " + str(self.args.upper) + "\nNumber of links: " + str(self.args.num) + "\nReturn the cheapest: " + str(self.args.cheap) + NORM)
 
     # Get the title of the product
-    def getTitle(self, soup):
+    def get_item_title(self, soup):
         productTitle = soup.find("span", attrs={"id": 'productTitle'})
 
         if productTitle != None:
@@ -136,7 +134,7 @@ class Scraper():
         return productTitle
 
     # Get the price of the product and any discounts
-    def getPrice(self, soup):
+    def get_item_price(self, soup):
         discount = soup.find("span", attrs={
                              "class": "reinventPriceSavingsPercentageMargin savingsPercentage"})
         priceSpan = soup.select_one(
@@ -175,7 +173,7 @@ class Scraper():
         return productPrice
 
     # Get the product's rating out of 5.0
-    def getProductRating(self, soup):
+    def get_product_rating(self, soup):
         productRating = soup.find(
             "span", attrs={"class": "reviewCountTextLinkedHistogram"})
 
@@ -187,7 +185,7 @@ class Scraper():
         return productRating
 
     # Get the total number of product reviews
-    def getProductReviews(self, soup):
+    def get_product_reviews(self, soup):
         numberOfReviews = soup.find(
             "span", attrs={'id': 'acrCustomerReviewText'})
 
@@ -199,7 +197,7 @@ class Scraper():
         return numberOfReviews
 
     # Gets product's availability (e.g in stock, how many left, out of stock)
-    def getProductAvailability(self, soup):
+    def get_product_avail(self, soup):
         productAvailabilityDiv = soup.find("div", attrs={'id': 'availability'})
 
         if productAvailabilityDiv != None:
@@ -218,14 +216,14 @@ class Scraper():
         return productAvailability
 
     # Get the args the user passed in
-    def parseArgs(self):
+    def parse_args(self):
         # parser.print_help()
         args = parser.parse_args()
 
         self.args = copy.deepcopy(args)
 
     # Make sure that the mandatory args are passed in
-    def processArgs(self):
+    def process_args(self):
         # If the user doesn't give an item, close the program.
         if self.args.item == None:
             print("Item argument not specified. Program terminating...")
@@ -255,7 +253,7 @@ class Scraper():
         self.scrape()
 
     # Get all the necessary pages need to collect the amount of links the user wants
-    def getItemLinksFromPages(self):
+    def get_all_item_links(self):
         page = 1
         i = 0
         linksList = []
@@ -292,7 +290,7 @@ class Scraper():
         return linksList
 
     # Loop through all the item links retrieved and collect the data based on the args
-    def processItemLinks(self, linksList):
+    def process_item_links(self, linksList):
         # Where the items will be stored
         allItems = []
         itemNum = 1
@@ -309,19 +307,19 @@ class Scraper():
             # print(GREEN + "Collecting item data..." + NORM)
 
             # Getting product title
-            productTitle = self.getTitle(soup)
+            productTitle = self.get_item_title(soup)
 
             # Get product price
-            productPrice = self.getPrice(soup)
+            productPrice = self.get_item_price(soup)
 
             # Get product rating
-            productRating = self.getProductRating(soup)
+            productRating = self.get_product_rating(soup)
 
             # Get number of product reviews
-            numberOfReviews = self.getProductReviews(soup)
+            numberOfReviews = self.get_product_reviews(soup)
 
             # Get product availability
-            productAvailability = self.getProductAvailability(soup)
+            productAvailability = self.get_product_avail(soup)
 
             productPrice = productPrice.replace(' ', '')
 
@@ -349,7 +347,7 @@ class Scraper():
         return allItems
 
     # Output the results to the console
-    def outputData(self, allItems):
+    def output_data(self, allItems):
         output = "Item # |{:^95}| Price | Rank\n"
         output = output.format("Link")
 
@@ -360,8 +358,8 @@ class Scraper():
         # Print the items to the console
         with open("./" + self.args.out, "a", encoding="utf-8") as file:
             for item in allItems:
-                output += item.toString()
-                item.writeToCSV(file)
+                output += item.to_string()
+                item.write_to_csv(file)
         file.close()
         print(output)
 
@@ -370,14 +368,12 @@ class Scraper():
             allItems = sorted(allItems, key=lambda item: item.price)
             print(GREEN + f"The cheapest item out of all the data pulled is: \n" + NORM)
             if len(allItems) > 0:
-                print(allItems[0].toString())
+                print(allItems[0].to_string())
             else:
                 print("No items were found that fit the arguments used.")
 
-
 def main():
     Scraper()
-
 
 if __name__ == '__main__':
     main()
