@@ -84,7 +84,7 @@ class Item():
 
 # Object for scraping amazon products 
 class Scraper():
-    def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False, out: str = "./out.csv"):
+    def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False, out: str = "out.csv"):
         self.parse_args()
 
         if self.args.item and self.args.num and self.args.num > 0:
