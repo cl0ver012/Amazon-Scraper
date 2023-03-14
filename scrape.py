@@ -3,6 +3,7 @@ import copy
 import random
 import sys
 import time
+import json
 from bs4 import BeautifulSoup
 import requests
 from rich.progress import track
@@ -36,7 +37,7 @@ parser.add_argument(
 parser.add_argument(
     "-n", "--num", help="enter the number of links you want the program to look through (recommended 100+) (*)", type=int)
 parser.add_argument(
-    "-o", "--out", help="enter the name of the csv you want the product information to go to", type=str)
+    "-o", "--out", help="enter the name of the csv/json you want the product information to go to", type=str)
 parser.add_argument("-c", dest="cheap",
                     help="add this argument if you want the program to return the cheapest item at the end of scraping", action="store_true")
 
@@ -73,6 +74,21 @@ class Item():
                 return GREEN + "GOOD"
         except:
             return NORM + "N/A"
+        
+    def json_format(self):
+        output = {
+            "title": f"{self.title}",
+            "price": f"{self.price}",
+            "rating": f"{self.rating}",
+            "reviews": f"{self.reviews}",
+            "availability": f"{self.availability}",
+            "url": f"{self.URL}"
+        }
+
+        return output
+    
+    def get_num(self):
+        return self.num
 
     def to_string(self):
         # item num, link, price, rank
@@ -361,6 +377,13 @@ class Scraper():
                 item.write_to_csv(file)
         file.close()
         print(output)
+
+        items = {}
+        with open("./" + self.args.out.split(".csv")[0] + ".json", "a", encoding="utf-8") as json_file:
+            for item in allItems:
+                items[f"{item.get_num()}"] = item.json_format()
+            json_file.write(json.dumps(items, indent=4))
+        json_file.close()
 
         # If they specified that they want the cheapest item, return the cheapest.
         if self.args.cheap:

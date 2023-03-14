@@ -107,7 +107,7 @@ OR
 py scrape.py --out test
 ```
 
-Tells the program that you want the product information to be written to a csv named test. If this argument is not provided the default csv the information will go to is: "out.csv"
+Tells the program that you want the product information to be written to a csv/json named test. If this argument is not provided the default csv/json the information will go to is: "out.csv"/"out.json"
 
 #### Examples of Possible Run Commands:
 
@@ -135,7 +135,7 @@ Get all items no matter the price:
 py scrape.py -i car tires -n 100
 ```
 
-Get the cheapest item of the items scraped and write the information to a csv named "gfxcards":
+Get the cheapest item of the items scraped and write the information to a csv/json named "gfxcards":
 
 ```
 py scrape.py -i rtx 3090 -n 50 -c -o gfxcards
@@ -143,13 +143,19 @@ py scrape.py -i rtx 3090 -n 50 -c -o gfxcards
 
 ## CSV: 
 
-Formatting:
+Format:
 
 ```
 title,price,rating,reviews,availability,url
 ```
 
 The CSV contains **ALL** of the relevant items scraped
+
+## JSON:
+
+Format:
+
+(https://i.imgur.com/IR2ppw9.png)
 
 ## Future Improvements
 
@@ -159,7 +165,7 @@ The CSV contains **ALL** of the relevant items scraped
 * [x] Return the cheapest item 
 * [x] Dynamic headers (Special thanks to @mumanye for adding this functionality)
 * [ ] Using proxies?
-* [ ] JSON Output
+* [x] JSON Output and functionality for choosing which JSON the data goes to
 * [x] Improve the consistency of finding product information
 * [x] Adding class functionality so you do not have to use args (e.g look at demo.py for a code example)
  
