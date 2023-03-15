@@ -4,7 +4,13 @@
 
 Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more!
 
-## Dependencies:
+## Technology Needed:
+
+* Python (here is where you can install python: https://www.python.org/downloads/)
+* A python package manager (e.g pip) (here is where you can install pip: https://pip.pypa.io/en/stable/installation/)
+* git (here is where you can install git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+## Python Dependencies Needed:
 
 * bs4 (BeautifulSoup4)
 * requests
@@ -140,6 +146,8 @@ Get the cheapest item of the items scraped and write the information to a csv/js
 ```
 py scrape.py -i rtx 3090 -n 50 -c -o gfxcards
 ```
+
+# If you encounter issues trying to run commands using "py", you may have to use "python" or "py3" instead. Your environment variable may also be the issue.
 
 ## CSV: 
 
