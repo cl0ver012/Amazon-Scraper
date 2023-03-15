@@ -4,7 +4,6 @@ import random
 import sys
 import time
 import json
-from pathlib import Path
 from bs4 import BeautifulSoup
 import requests
 from rich.progress import track
@@ -110,9 +109,16 @@ class Scraper():
     def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False, out: str = "out.csv"):
         self.parse_args()
 
+        self.page = 2
+        # All the items the scraper will collect
+        self.allItems = []
+        # All the links of the items the scraper will look through (this resets after each scrape) to always provide new links.
+        self.linksList = []
+        self.itemNum = 1
+
         if self.args.item and self.args.num and self.args.num > 0:
             self.provided = True
-            self.process_args()
+            self.scrape()
             return
 
         self.args.out = out
@@ -123,22 +129,24 @@ class Scraper():
         self.args.cheap = cheap
         self.provided = False
 
-        self.process_args()
+        self.scrape()
 
     def scrape(self):
+        self.process_args()
         self.HEADERS = generate_headers()
-        self.URL = f"https://www.amazon.com/s?k={self.args.item}"
+        if self.page == 2:
+            self.URL = f"https://www.amazon.com/s?k={self.args.item}"
         # Get all the item links from every page needed
-        linksList = self.get_all_item_links()
+        self.get_all_item_links()
 
         # Process all the item links and get the list including the relevant ones
-        allItems = self.process_item_links(linksList)
+        self.process_item_links()
 
         # Soup is done
         print(RED + "Your soup is ready!\n" + NORM)
 
         # Output the data
-        self.output_data(allItems)
+        self.output_data()
 
         # Print the selected settings
         print(RED + "Your selected settings for this soup were:\nItem: " + self.args.item + "\nLower bounds: " + str(self.args.lower) +
@@ -247,13 +255,13 @@ class Scraper():
     # Make sure that the mandatory args are passed in
     def process_args(self):
         # If the user doesn't give an item, close the program.
-        if self.args.item == None:
+        if not self.args.item:
             print("Item argument not specified. Program terminating...")
             time.sleep(1)
             sys.exit(1)
 
         # If the user doesn't give the number of links to scrape, close the program.
-        if self.args.num == None or self.args.num <= 0:
+        if not self.args.num or self.args.num <= 0:
             print("Number of links argument not specified. Program terminating...")
             time.sleep(1)
             sys.exit(1)
@@ -272,19 +280,15 @@ class Scraper():
 
             self.args.item = search
 
-        self.scrape()
-
     # Get all the necessary pages need to collect the amount of links the user wants
     def get_all_item_links(self):
-        page = 1
         i = 0
-        linksList = []
         # Loop for extracting the link content from the href tag
         while i < self.args.num:
             # HTTP Request with random delay
             time.sleep(0.5 * random.random())
             webpage = requests.get(self.URL, headers=self.HEADERS)
-            print(BLUE + f"Successfully connected to the #{page} webpage...\n" + RED + "Starting the soup...\n" +
+            print(BLUE + f"Successfully connected to the #{self.page - 1} webpage...\n" + RED + "Starting the soup...\n" +
                   GREEN + "Exracting all item links..." + NORM if webpage.status_code == 200 else "Connection failed.")
 
             # Soup Object containing all data
@@ -298,27 +302,21 @@ class Scraper():
             for link in links:
                 if i == self.args.num:
                     break
-                linksList.append(link.get('href'))
+                self.linksList.append(link.get('href'))
 
                 # Don't use links where you were redirected
-                if "picassoRedirect" in linksList[i]:
-                    linksList.remove(linksList[i])
+                if "picassoRedirect" in self.linksList[i]:
+                    self.linksList.remove(self.linksList[i])
                     i -= 1
 
                 i += 1
-            self.URL = self.URL.split("&page=")[0] + f"&page={page}"
-            page += 1
-
-        return linksList
+            self.page += 1
+            self.URL = self.URL.split("&page=")[0] + f"&page={self.page}"
 
     # Loop through all the item links retrieved and collect the data based on the args
-    def process_item_links(self, linksList):
-        # Where the items will be stored
-        allItems = []
-        itemNum = 1
-
+    def process_item_links(self):
         # Finally get the data from each URL from the search
-        for link in track(linksList, description='Collecting item data...  '):
+        for link in track(self.linksList, description='Collecting item data...  '):
             URL = "http://amazon.com" + link
             # Making the HTTP Request
             time.sleep(0.5 * random.random())
@@ -349,27 +347,25 @@ class Scraper():
                 productPrice = float(
                     productPrice.replace('$', '').replace(',', ''))
                 if (self.args.lower and self.args.lower != 0) and (self.args.upper and self.args.upper != 0) and self.args.lower <= productPrice and productPrice <= self.args.upper:
-                    item = Item(itemNum, productTitle, "$" + str(productPrice),
+                    item = Item(self.itemNum, productTitle, "$" + str(productPrice),
                                 productRating, numberOfReviews, productAvailability, URL)
-                    allItems.append(item)
+                    self.allItems.append(item)
                 elif (self.args.lower == None or self.args.lower == 0) and self.args.upper and productPrice <= self.args.upper:
-                    item = Item(itemNum, productTitle, "$" + str(productPrice),
+                    item = Item(self.itemNum, productTitle, "$" + str(productPrice),
                                 productRating, numberOfReviews, productAvailability, URL)
-                    allItems.append(item)
+                    self.allItems.append(item)
                 elif (self.args.upper == None or self.args.upper == 0) and self.args.lower and self.args.lower <= productPrice:
-                    item = Item(itemNum, productTitle, "$" + str(productPrice),
+                    item = Item(self.itemNum, productTitle, "$" + str(productPrice),
                                 productRating, numberOfReviews, productAvailability, URL)
-                    allItems.append(item)
+                    self.allItems.append(item)
                 elif (self.args.upper == None or self.args.upper == 0) and (self.args.lower == None or self.args.lower == 0):
-                    item = Item(itemNum, productTitle, "$" + str(productPrice),
+                    item = Item(self.itemNum, productTitle, "$" + str(productPrice),
                                 productRating, numberOfReviews, productAvailability, URL)
-                    allItems.append(item)
-                itemNum += 1
-
-        return allItems
+                    self.allItems.append(item)
+                self.itemNum += 1
 
     # Output the results to the console
-    def output_data(self, allItems):
+    def output_data(self):
         output = "Item # |{:^95}| Price | Rank\n"
         output = output.format("Link")
 
@@ -379,7 +375,7 @@ class Scraper():
         
         # Print the items to the console
         with open("./" + self.args.out, "a", encoding="utf-8") as file:
-            for item in allItems:
+            for item in self.allItems:
                 output += item.to_string()
                 item.write_to_csv(file)
         file.close()
@@ -388,7 +384,7 @@ class Scraper():
         # Open in write mode, we want to overwrite what was previously there
         items = {f"{self.args.item.strip()}": {}}
         with open("./" + self.args.out.split(".csv")[0] + ".json", "w", encoding="utf-8") as json_file:
-            for item in allItems:
+            for item in self.allItems:
                 items[f"{self.args.item.strip()}"][f"{item.get_num()}"] = item.json_format()
                 item.convert_price_to_float()
             json_file.write(json.dumps(items, indent=4))
@@ -396,12 +392,14 @@ class Scraper():
 
         # If they specified that they want the cheapest item, return the cheapest.
         if self.args.cheap:
-            allItems = sorted(allItems, key=lambda item: item.price)
+            sorted(self.allItems, key=lambda item: item.price)
             print(GREEN + f"The cheapest item out of all the data pulled is: \n" + NORM)
-            if len(allItems) > 0:
-                print(allItems[0].to_string())
+            if len(self.allItems) > 0:
+                print(sorted(self.allItems, key=lambda item: item.price)[0].to_string())
             else:
                 print("No items were found that fit the arguments used.")
+        # If the user decides to scrape again with the same scraper object we do not want to run through the same links
+        self.linksList = []
 
 def main():
     Scraper()
