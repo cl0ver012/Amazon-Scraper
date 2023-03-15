@@ -132,10 +132,19 @@ class Scraper():
         self.scrape()
 
     def scrape(self):
+        # If they called it aditional times make sure they are sure about additional scraping
+        if self.itemNum > 1:
+            resp = input(f"Are you sure you want to scrape an additional {self.args.num} {self.args.item}? (y/n)\n")
+            if resp.lower() != "y":
+                return
+
         self.process_args()
         self.HEADERS = generate_headers()
+
+        # Only update URL if it's the object's first time scraping
         if self.page == 2:
             self.URL = f"https://www.amazon.com/s?k={self.args.item}"
+
         # Get all the item links from every page needed
         self.get_all_item_links()
 
