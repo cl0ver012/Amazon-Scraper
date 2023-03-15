@@ -90,8 +90,14 @@ class Item():
     
     def get_num(self):
         return self.num
+    
+    def convert_price_to_float(self):
+        self.price = float(self.price.replace("$", ""))
 
     def to_string(self):
+        if "$" not in str(self.price):
+            self.price = "$" + str(self.price)
+
         # item num, link, price, rank
         output = " {:^7} | {:<60} | {:<7} | {:^7} "
         output = output.format(
@@ -384,6 +390,7 @@ class Scraper():
         with open("./" + self.args.out.split(".csv")[0] + ".json", "w", encoding="utf-8") as json_file:
             for item in allItems:
                 items[f"{self.args.item}"][f"{item.get_num()}"] = item.json_format()
+                item.convert_price_to_float()
             json_file.write(json.dumps(items, indent=4))
         json_file.close()
 
