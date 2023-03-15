@@ -386,10 +386,10 @@ class Scraper():
         print(output)
 
         # Open in write mode, we want to overwrite what was previously there
-        items = {f"{self.args.item}": {}}
+        items = {f"{self.args.item.strip()}": {}}
         with open("./" + self.args.out.split(".csv")[0] + ".json", "w", encoding="utf-8") as json_file:
             for item in allItems:
-                items[f"{self.args.item}"][f"{item.get_num()}"] = item.json_format()
+                items[f"{self.args.item.strip()}"][f"{item.get_num()}"] = item.json_format()
                 item.convert_price_to_float()
             json_file.write(json.dumps(items, indent=4))
         json_file.close()
