@@ -417,8 +417,9 @@ class Scraper():
 
         # Ask the user if they want to do additional scraping.
         if self.itemNum > 1:
-            resp = input(f"Do you want to scrape an additional {self.args.num} {self.args.item}? (y/n)\n")
+            resp = input(f"Do you want to scrape an additional {self.args.num} {self.args.item.strip()}? (y/n)\n")
             if resp.lower() == "y":
+                self.provided = False
                 self.scrape()
 
 def main():
