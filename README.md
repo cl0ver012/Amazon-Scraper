@@ -176,5 +176,5 @@ Format:
 * [x] JSON Output and functionality for choosing which JSON the data goes to
 * [x] Improve the consistency of finding product information
 * [x] Adding class functionality so you do not have to use args (e.g look at demo.py for a code example)
-* [x] Functionality so the user can choose to scrape additional n number of links using the same scraper object by   doing (scraper_object_name).scrape() (check demo.py for an example)
+* [x] Functionality so the user can choose to scrape additional n number of links (updated: this is now done through the CLI)
  

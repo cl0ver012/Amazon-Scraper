@@ -132,12 +132,6 @@ class Scraper():
         self.scrape()
 
     def scrape(self):
-        # If they called it aditional times make sure they are sure about additional scraping
-        if self.itemNum > 1:
-            resp = input(f"Are you sure you want to scrape an additional {self.args.num} {self.args.item}? (y/n)\n")
-            if resp.lower() != "y":
-                return
-
         self.process_args()
         self.HEADERS = generate_headers()
 
@@ -156,10 +150,6 @@ class Scraper():
 
         # Output the data
         self.output_data()
-
-        # Print the selected settings
-        print(RED + "Your selected settings for this soup were:\nItem: " + self.args.item + "\nLower bounds: " + str(self.args.lower) +
-              "\nUpper bounds: " + str(self.args.upper) + "\nNumber of links: " + str(self.args.num) + "\nReturn the cheapest: " + str(self.args.cheap) + NORM)
 
     # Get the title of the product
     def get_item_title(self, soup):
@@ -409,6 +399,16 @@ class Scraper():
                 print("No items were found that fit the arguments used.")
         # If the user decides to scrape again with the same scraper object we do not want to run through the same links
         self.linksList = []
+
+        # Print the selected settings
+        print(RED + "Your selected settings for this soup were:\nItem: " + self.args.item + "\nLower bounds: " + str(self.args.lower) +
+              "\nUpper bounds: " + str(self.args.upper) + "\nNumber of links: " + str(self.args.num) + "\nReturn the cheapest: " + str(self.args.cheap) + NORM)
+
+        # Ask the user if they want to do additional scraping.
+        if self.itemNum > 1:
+            resp = input(f"Do you want to scrape an additional {self.args.num} {self.args.item}? (y/n)\n")
+            if resp.lower() == "y":
+                self.scrape()
 
 def main():
     Scraper()
