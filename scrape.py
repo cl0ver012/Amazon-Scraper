@@ -4,6 +4,7 @@ import random
 import sys
 import time
 import json
+import os
 from bs4 import BeautifulSoup
 import requests
 from rich.progress import track
@@ -371,18 +372,28 @@ class Scraper():
         for _ in range(len(output)):
             output += "-"
         output += "\n"
+
+        dir_path = "./csvs/"
+
+        if not os.path.exists(dir_path):
+            os.mkdir(dir_path)
         
         # Print the items to the console
-        with open("./" + self.args.out, "a", encoding="utf-8") as file:
+        with open("./csvs/" + self.args.out, "w", encoding="utf-8") as file:
             for item in self.allItems:
                 output += item.to_string()
                 item.write_to_csv(file)
         file.close()
         print(output)
 
+        dir_path = "./jsons/"
+
+        if not os.path.exists(dir_path):
+            os.mkdir(dir_path)
+
         # Open in write mode, we want to overwrite what was previously there
         items = {f"{self.args.item.strip()}": {}}
-        with open("./" + self.args.out.split(".csv")[0] + ".json", "w", encoding="utf-8") as json_file:
+        with open("./jsons/" + self.args.out.split(".csv")[0] + ".json", "w", encoding="utf-8") as json_file:
             for item in self.allItems:
                 items[f"{self.args.item.strip()}"][f"{item.get_num()}"] = item.json_format()
                 item.convert_price_to_float()
