@@ -283,11 +283,14 @@ class Scraper():
     # Get all the necessary pages need to collect the amount of links the user wants
     def get_all_item_links(self):
         i = 0
+        prevI = -1
+        print("Headers: " + str(self.HEADERS))
         # Loop for extracting the link content from the href tag
         while i < self.args.num:
             # HTTP Request with random delay
             time.sleep(0.5 * random.random())
             webpage = requests.get(self.URL, headers=self.HEADERS)
+            
             print(BLUE + f"Successfully connected to the #{self.page} webpage...\n" + RED + "Starting the soup...\n" +
                   GREEN + "Exracting all item links..." + NORM if webpage.status_code == 200 else "Connection failed.")
 
@@ -310,8 +313,16 @@ class Scraper():
                     i -= 1
 
                 i += 1
-            self.page += 1
-            self.URL = self.URL.split("&page=")[0] + f"&page={self.page}"
+
+            # Sometimes there are not enough items to gather data from so break out of connecting to webpages if the item counter isn't updating.
+            if prevI != i:
+                prevI = i
+                self.page += 1
+                self.URL = self.URL.split("&page=")[0] + f"&page={self.page}"
+            else: 
+                prevI = -1
+                print(RED + "Could not find anymore plate links... Initiating data processing...\n" + NORM)
+                return
 
     # Loop through all the item links retrieved and collect the data based on the args
     def process_item_links(self):
@@ -324,7 +335,6 @@ class Scraper():
 
             # Creating the Soup Object containing all data
             soup = BeautifulSoup(webpage.content, "lxml")
-            # print(GREEN + "Collecting item data..." + NORM)
 
             # Getting product title
             productTitle = self.get_item_title(soup)
