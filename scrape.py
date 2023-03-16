@@ -110,7 +110,7 @@ class Scraper():
     def __init__(self, item: str = None, num: int = 0, lower: int = 0, upper: int = 0, cheap: bool = False, out: str = "out.csv"):
         self.parse_args()
 
-        self.page = 2
+        self.page = 1
         # All the items the scraper will collect
         self.allItems = []
         # All the links of the items the scraper will look through (this resets after each scrape) to always provide new links.
@@ -137,7 +137,7 @@ class Scraper():
         self.HEADERS = generate_headers()
 
         # Only update URL if it's the object's first time scraping
-        if self.page == 2:
+        if self.page == 1:
             self.URL = f"https://www.amazon.com/s?k={self.args.item}"
 
         # Get all the item links from every page needed
@@ -288,7 +288,7 @@ class Scraper():
             # HTTP Request with random delay
             time.sleep(0.5 * random.random())
             webpage = requests.get(self.URL, headers=self.HEADERS)
-            print(BLUE + f"Successfully connected to the #{self.page - 1} webpage...\n" + RED + "Starting the soup...\n" +
+            print(BLUE + f"Successfully connected to the #{self.page} webpage...\n" + RED + "Starting the soup...\n" +
                   GREEN + "Exracting all item links..." + NORM if webpage.status_code == 200 else "Connection failed.")
 
             # Soup Object containing all data
