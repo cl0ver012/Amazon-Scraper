@@ -2,13 +2,15 @@ import argparse
 import copy
 import random
 import sys
+from threading import Thread
 import time
 import json
 import os
 from bs4 import BeautifulSoup
 import requests
-from rich.progress import track
 from headers import generate_headers
+from queue import Queue
+from rich.progress import Progress
 
 # Different possible colors
 BLUE = '\033[34m'
@@ -114,7 +116,7 @@ class Scraper():
         # All the items the scraper will collect
         self.allItems = []
         # All the links of the items the scraper will look through (this resets after each scrape) to always provide new links.
-        self.linksList = []
+        self.linksList = Queue(0)
         self.itemNum = 1
 
         if self.args.item and self.args.num and self.args.num > 0:
@@ -142,10 +144,19 @@ class Scraper():
 
         # Get all the item links from every page needed
         self.get_all_item_links()
+        self.starting_amount = self.linksList.qsize()
+        start_time = time.time()
 
-        # Process all the item links and get the list including the relevant ones
-        self.process_item_links()
+        with Progress() as self.progress:
+            self.task = self.progress.add_task("Collecting item data... ", total=self.starting_amount)
+        
+            for _ in range(int(self.starting_amount / 2)):
+                worker = Thread(target=self.process_item_links, daemon=True)
+                worker.start()
 
+            self.linksList.join()
+
+        print(GREEN + "It took %s seconds " % (time.time() - start_time) + f"to process {self.starting_amount} relevant items that were found." + NORM)
         # Soup is done
         print(RED + "Your soup is ready!\n" + NORM)
 
@@ -305,14 +316,9 @@ class Scraper():
             for link in links:
                 if i == self.args.num:
                     break
-                self.linksList.append(link.get('href'))
-
-                # Don't use links where you were redirected
-                if "picassoRedirect" in self.linksList[i]:
-                    self.linksList.remove(self.linksList[i])
-                    i -= 1
-
-                i += 1
+                if "picassoRedirect" not in link.get('href'):
+                    self.linksList.put(link.get('href'))
+                    i += 1
 
             # Sometimes there are not enough items to gather data from so break out of connecting to webpages if the item counter isn't updating.
             if prevI != i:
@@ -327,11 +333,14 @@ class Scraper():
     # Loop through all the item links retrieved and collect the data based on the args
     def process_item_links(self):
         # Finally get the data from each URL from the search
-        for link in track(self.linksList, description='Collecting item data...  '):
-            URL = "http://amazon.com" + link
+        while True:
+            URL = "http://amazon.com" + self.linksList.get()
             # Making the HTTP Request
             time.sleep(0.5 * random.random())
             webpage = requests.get(URL, headers=self.HEADERS)
+
+            if webpage.status_code != 200:
+                print(f"Connection failed: {webpage.status_code}")
 
             # Creating the Soup Object containing all data
             soup = BeautifulSoup(webpage.content, "lxml")
@@ -373,6 +382,9 @@ class Scraper():
                                 productRating, numberOfReviews, productAvailability, URL)
                     self.allItems.append(item)
                 self.itemNum += 1
+
+            self.progress.update(self.task, advance=1)
+            self.linksList.task_done()
 
     # Output the results to the console
     def output_data(self):
@@ -418,8 +430,6 @@ class Scraper():
                 print(sorted(self.allItems, key=lambda item: item.price)[0].to_string())
             else:
                 print("No items were found that fit the arguments used.")
-        # If the user decides to scrape again with the same scraper object we do not want to run through the same links
-        self.linksList = []
 
         # Print the selected settings
         print(RED + "Your selected settings for this soup were:\nItem: " + self.args.item + "\nLower bounds: " + str(self.args.lower) +

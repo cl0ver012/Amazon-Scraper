@@ -178,4 +178,5 @@ Format:
 * [x] Adding class functionality so you do not have to use args (e.g look at demo.py for a code example)
 * [x] Functionality so the user can choose to scrape additional n number of links (updated: this is now done through the CLI)
 * [x] Individual folders for all of these csvs and jsons (to keep the directory clean)
+* [x] Processing product information using multiple threads to increase speed 
  
