@@ -180,3 +180,4 @@ Format:
 * [x] Individual folders for all of these csvs and jsons (to keep the directory clean)
 * [x] Processing product information using multiple threads to increase speed 
  
+ ## Please report any issues/bugs you come across when using the scraper! Always looking to receive feedback, what I should add, and make improvements!
