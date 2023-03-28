@@ -150,7 +150,7 @@ class Scraper():
         with Progress() as self.progress:
             self.task = self.progress.add_task("Collecting item data... ", total=self.starting_amount)
         
-            for _ in range(int(self.starting_amount / 2)):
+            for _ in range(10 if self.starting_amount >= 10 else self.starting_amount):
                 worker = Thread(target=self.process_item_links, daemon=True)
                 worker.start()
 
@@ -295,7 +295,7 @@ class Scraper():
     def get_all_item_links(self):
         i = 0
         prevI = -1
-        print("Headers: " + str(self.HEADERS))
+        
         # Loop for extracting the link content from the href tag
         while i < self.args.num:
             # HTTP Request with random delay
