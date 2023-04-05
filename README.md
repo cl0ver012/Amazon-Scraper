@@ -2,7 +2,7 @@
 
 ![Amazon Scraper](https://i.imgur.com/7DlRO8Q.png)
 
-Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more!
+Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv/json output, and more!
 
 ## Technology Needed:
 
