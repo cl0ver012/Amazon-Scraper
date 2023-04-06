@@ -309,15 +309,17 @@ class Scraper():
             soup = BeautifulSoup(webpage.content, "lxml")
 
             # Find all of the links connected to the item search
-            links = soup.find_all(
-                "a", attrs={'class': 'a-link-normal s-no-outline'})
+            links = soup.find_all("a", attrs={'class': 'a-link-normal s-no-outline'})
 
             # List where are the links are going to be stored
             for link in links:
                 if i == self.args.num:
                     break
-                if "picassoRedirect" not in link.get('href'):
-                    self.linksList.put(link.get('href'))
+
+                href = link.get('href')
+
+                if "picassoRedirect" not in href:
+                    self.linksList.put(href)
                     i += 1
 
             # Sometimes there are not enough items to gather data from so break out of connecting to webpages if the item counter isn't updating.
@@ -327,7 +329,7 @@ class Scraper():
                 self.URL = self.URL.split("&page=")[0] + f"&page={self.page}"
             else: 
                 prevI = -1
-                print(RED + "Could not find anymore plate links... Initiating data processing...\n" + NORM)
+                print(RED + f"Could not find anymore {self.args.item} links... Initiating data processing...\n" + NORM)
                 return
 
     # Loop through all the item links retrieved and collect the data based on the args
@@ -337,7 +339,7 @@ class Scraper():
             URL = "http://amazon.com" + self.linksList.get()
             # Making the HTTP Request
             time.sleep(0.5 * random.random())
-            webpage = requests.get(URL, headers=self.HEADERS)
+            webpage = requests.get(URL, headers=generate_headers())
 
             if webpage.status_code != 200:
                 print(f"Connection failed: {webpage.status_code}")
@@ -416,9 +418,11 @@ class Scraper():
         # Open in write mode, we want to overwrite what was previously there
         items = {f"{self.args.item.strip()}": {}}
         with open("./jsons/" + self.args.out.split(".csv")[0] + ".json", "w", encoding="utf-8") as json_file:
+            i = 0
             for item in self.allItems:
-                items[f"{self.args.item.strip()}"][f"{item.get_num()}"] = item.json_format()
+                items[f"{self.args.item.strip()}"][f"{i + 1}"] = item.json_format()
                 item.convert_price_to_float()
+                i += 1
             json_file.write(json.dumps(items, indent=4))
         json_file.close()
 
