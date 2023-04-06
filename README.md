@@ -2,7 +2,7 @@
 
 ![Amazon Scraper](https://i.imgur.com/7DlRO8Q.png)
 
-Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv output, and more!
+Functionality: scraping multiple amazon web pages for your item, setting a price range for your item, csv/json output, and more!
 
 ## Technology Needed:
 
@@ -31,6 +31,8 @@ git clone https://github.com/Moffi-bit/Amazon-Scraper.git
 ```
 py -m pip install bs4 requests lxml rich
 ```
+
+# If you encounter issues trying to run commands using "py", you may have to use "python" or "py3" instead. Your system environment PATH variable may also be the issue.
 
 ### Moving into the cloned repository:
 
@@ -146,8 +148,6 @@ Get the cheapest item of the items scraped and write the information to a csv/js
 ```
 py scrape.py -i rtx 3090 -n 50 -c -o gfxcards
 ```
-
-# If you encounter issues trying to run commands using "py", you may have to use "python" or "py3" instead. Your environment variable may also be the issue.
 
 ## CSV: 
 
